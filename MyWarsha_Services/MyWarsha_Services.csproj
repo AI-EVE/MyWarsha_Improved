@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyWarsha_Interfaces\MyWarsha_Interfaces.csproj" />
+    <ProjectReference Include="..\MyWarsha_Repositories\MyWarsha_Repositories.csproj" />
+    <ProjectReference Include="..\MyWarsha_DTOs\MyWarsha_DTOs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.21.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
