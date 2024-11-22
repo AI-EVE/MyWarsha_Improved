@@ -4,6 +4,7 @@ using MyWarsha_DataAccess.Data;
 using MyWarsha_DTOs.ProductTypeDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
+using Utils.FilteringUtils.ProductTypeFilters;
 
 namespace MyWarsha_Repositories
 {
@@ -19,7 +20,11 @@ namespace MyWarsha_Repositories
         public async Task<IEnumerable<ProductTypeDto>> GetAll()
         {
             return await _context.ProductType
-            .Select(pt => ProductTypeDto.ToProductTypeDto(pt))
+            .Select(pt => new ProductTypeDto
+            {
+                Id = pt.Id,
+                Name = pt.Name
+            })
             .AsNoTracking()
             .ToListAsync();
         }
@@ -29,13 +34,31 @@ namespace MyWarsha_Repositories
             return await _context.ProductType.FirstOrDefaultAsync(pt => pt.Id == id);
         }
 
-        public async Task<ProductTypeDto?> Get(Expression<Func<ProductType, bool>> predicate)
+        public async Task<ProductTypeDto?> Get(ProductTypeFilters filters)
         {
-            return await _context.ProductType
-            .Where(predicate)
-            .Select(pt => ProductTypeDto.ToProductTypeDto(pt))
+            var query = _context.ProductType.AsQueryable();
+
+            if (filters.Name != null)
+            {
+                query = query.Where(pt => pt.Name == filters.Name);
+            }
+
+            return await query
+            .Select(pt => new ProductTypeDto
+            {
+                Id = pt.Id,
+                Name = pt.Name
+            })
             .AsNoTracking()
             .FirstOrDefaultAsync();
+        }
+        public async Task<ProductTypeDto?> GetDtoById(int id)
+        {
+            return await _context.ProductType.Where(pt => pt.Id == id).Select(pt => new ProductTypeDto
+            {
+                Id = pt.Id,
+                Name = pt.Name
+            }).AsNoTracking().FirstOrDefaultAsync();
         }
     }
 }

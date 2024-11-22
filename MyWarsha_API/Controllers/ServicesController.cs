@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MyWarsha_DTOs.ServiceDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
+using MyWarsha_Services.PdfServices;
 using Utils.FilteringUtils.ServiceFilters;
 using Utils.PageUtils;
 
@@ -24,25 +25,18 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAll([FromQuery] PaginationPropreties paginationPropreties, [FromQuery] ServiceFilters serviceFilters, [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice)
         {
-            try
-            {
-                var services = await _serviceRepository.GetAll(paginationPropreties, serviceFilters.ToExpression(), minPrice, maxPrice);
 
-                return Ok(services);
-            }
-            catch (Exception e)
-            { 
-                return BadRequest(e);
-            }
+            var services = await _serviceRepository.GetAll(paginationPropreties, serviceFilters, minPrice, maxPrice);
+            return Ok(services);
         }
-    
+
 
         [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Get(int id)
         {
-            var service = await _serviceRepository.Get(s => s.Id == id);
+            var service = await _serviceRepository.Get(id);
 
             if (service == null)
             {
@@ -52,11 +46,36 @@ namespace MyWarsha_API.Controllers
             return Ok(service);
         }
 
+        [HttpGet("pdf/{id}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> GetPdf(int id, [FromServices] InvoiceRenderingService invoiceRenderingService, [FromServices] ICategoryRepository categoryRepository)
+        {
+            var service = await _serviceRepository.Get(id);
+
+            try
+            {
+                if (service == null)
+                {
+                    return NotFound();
+                }
+                var categories = await categoryRepository.GetAll();
+                var document = invoiceRenderingService.GenerateInvoicePdf(service, categories.ToList());
+
+                return File(document, "application/pdf", "invoice.pdf");
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e);
+            }
+        }
+
         [HttpGet("count")]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> Count([FromQuery] ServiceFilters serviceFilters)
+        public async Task<IActionResult> Count([FromQuery] ServiceFilters serviceFilters, [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice)
         {
-            var count = await _serviceRepository.GetCount(serviceFilters.ToExpression());
+            var count = await _serviceRepository.GetCount(serviceFilters, minPrice, maxPrice);
 
             return Ok(count);
         }
@@ -68,7 +87,7 @@ namespace MyWarsha_API.Controllers
         {
             if (serviceCreateDto == null || serviceCreateDto.ServiceFees.Count == 0)
             {
-                return BadRequest("Service must have at least one service fee");
+                return BadRequest(new { message = "at least one service fee is required" });
             }
 
             if (!await _carRepository.HasClient(serviceCreateDto.CarId, serviceCreateDto.ClientId))
@@ -90,7 +109,7 @@ namespace MyWarsha_API.Controllers
                     Note = p.Note,
                     ProductId = p.ProductId,
                     //ServiceId = p.ServiceId
-                    
+
                 }).ToList(),
                 ServiceFees = serviceCreateDto.ServiceFees.Select(sf => new ServiceFee
                 {
@@ -128,7 +147,7 @@ namespace MyWarsha_API.Controllers
 
             service.ServiceStatusId = serviceUpdateDto.ServiceStatusId ?? service.ServiceStatusId;
             service.Note = serviceUpdateDto.Note ?? service.Note;
-            
+
             bool isDateValid = DateOnly.TryParse(serviceUpdateDto.Date, out DateOnly date);
 
             if (isDateValid)
@@ -142,7 +161,7 @@ namespace MyWarsha_API.Controllers
                 {
                     service.ClientId = serviceUpdateDto.ClientId ?? service.ClientId;
                     service.CarId = serviceUpdateDto.CarId ?? service.CarId;
-                }             
+                }
             }
 
             _serviceRepository.Update(service);
@@ -152,6 +171,30 @@ namespace MyWarsha_API.Controllers
             if (!isSaved)
             {
                 return BadRequest("Failed to save the service");
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var service = await _serviceRepository.GetById(id);
+
+            if (service == null)
+            {
+                return NotFound();
+            }
+
+            _serviceRepository.Delete(service);
+
+            bool isSaved = await _serviceRepository.SaveChanges();
+
+            if (!isSaved)
+            {
+                return BadRequest("Failed to delete the service");
             }
 
             return NoContent();

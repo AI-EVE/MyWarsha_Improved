@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.ProductsRestockingBillDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
@@ -25,15 +27,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<IEnumerable<ProductsRestockingBillDtoMulti>>> GetAll([FromQuery] PaginationPropreties paginationPropreties, [FromQuery] ProductsRestockingBillFilters filters)
         {
-            var predicate = filters.ToExpression();
-            var productsRestockingBills = await _productsRestockingBillRepository.GetAll(paginationPropreties, predicate);
-            foreach (var bill in productsRestockingBills)
-            {
-                foreach (var productBought in bill.ProductsBought)
-                { 
-                    productBought.productName = await _productRepository.GetProductName(productBought.ProductId);
-                }
-            }
+            var productsRestockingBills = await _productsRestockingBillRepository.GetAll(paginationPropreties, filters);
             return Ok(productsRestockingBills);
         }
 
@@ -42,7 +36,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(404)]
         public async Task<ActionResult<ProductsRestockingBillDto?>> GetById(int id)
         {
-            var productsRestockingBill = await _productsRestockingBillRepository.Get(x => x.Id == id);
+            var productsRestockingBill = await _productsRestockingBillRepository.Get(id);
             if (productsRestockingBill == null)
             {
                 return NotFound();
@@ -64,7 +58,7 @@ namespace MyWarsha_API.Controllers
             await _productsRestockingBillRepository.Add(productsRestockingBill);
             await _productsRestockingBillRepository.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = productsRestockingBill.Id }, new 
+            return CreatedAtAction(nameof(GetById), new { id = productsRestockingBill.Id }, new
             {
                 Id = productsRestockingBill.Id,
                 ShopName = productsRestockingBill.ShopName,
@@ -92,7 +86,7 @@ namespace MyWarsha_API.Controllers
 
             return NoContent();
         }
-        
+
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
@@ -112,10 +106,8 @@ namespace MyWarsha_API.Controllers
 
         [HttpGet("count")]
         public async Task<ActionResult> Count([FromQuery] ProductsRestockingBillFilters filters)
-        { 
-            var predicate = filters.ToExpression();
-
-            var count = await _productsRestockingBillRepository.GetCount(predicate);
+        {
+            var count = await _productsRestockingBillRepository.GetCount(filters);
             return Ok(count);
         }
 

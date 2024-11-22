@@ -15,8 +15,6 @@ namespace MyWarsha_DTOs.ProductDTOs
         public string? Description { get; set; }
         [Required]
         public decimal ListPrice { get; set; }
-        [Required]
-        public int CarinfoId { get; set; }
         public decimal SalePrice { get; set; }
         public int Stock { get; set; }
         public bool IsAvailable { get; set; } = true;

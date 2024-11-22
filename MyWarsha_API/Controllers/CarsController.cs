@@ -1,5 +1,7 @@
 using LinqKit;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.CarDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Interfaces.ServicesInterfaces.AzureServicesInterfaces;
@@ -15,15 +17,13 @@ namespace MyWarsha_API.Controllers
     {
         private readonly ICarRepository _carRepository;
         private readonly ICarImageRepository _carImageRepository;
-        private readonly ICarInfoRepository _carInfoRepository;
         private readonly IDeleteImageService _deleteImageService;
 
-        public CarsController(ICarRepository carRepository, ICarImageRepository carImageRepository, IDeleteImageService deleteImageService, ICarInfoRepository carInfoRepository)
+        public CarsController(ICarRepository carRepository, ICarImageRepository carImageRepository, IDeleteImageService deleteImageService)
         {
             _deleteImageService = deleteImageService;
             _carImageRepository = carImageRepository;
             _carRepository = carRepository;
-            _carInfoRepository = carInfoRepository;
         }
 
         // [HttpGet]
@@ -37,41 +37,9 @@ namespace MyWarsha_API.Controllers
         // [HttpGet("filter")]
         [HttpGet]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> GetAll([FromQuery] CarFilters carFilters,[FromQuery] PaginationPropreties paginationPropreties)
+        public async Task<IActionResult> GetAll([FromQuery] CarFilters carFilters, [FromQuery] PaginationPropreties paginationPropreties)
         {
-            var predicate = PredicateBuilder.New<Car>(true);
-
-            if (!string.IsNullOrEmpty(carFilters.PlateNumber))
-            {
-                predicate = predicate.And(c => c.PlateNumber.Contains(carFilters.PlateNumber));
-            }
-
-            if (!string.IsNullOrEmpty(carFilters.Color))
-            {
-                predicate = predicate.And(c => c.Color != null && c.Color == carFilters.Color);
-            }
-
-            if (!string.IsNullOrEmpty(carFilters.ChassisNumber))
-            {
-                predicate = predicate.And(c => c.ChassisNumber != null && c.ChassisNumber.StartsWith(carFilters.ChassisNumber));
-            }
-
-            if (!string.IsNullOrEmpty(carFilters.MotorNumber))
-            {
-                predicate = predicate.And(c => c.MotorNumber != null && c.MotorNumber.StartsWith(carFilters.MotorNumber));
-            }
-
-            if (carFilters.ClientId != null)
-            {
-                predicate = predicate.And(c => c.ClientId == carFilters.ClientId);
-            }
-
-            if (carFilters.CarInfoId != null)
-            {
-                predicate = predicate.And(c => c.CarInfoId == carFilters.CarInfoId);
-            }
-
-            var cars = await _carRepository.GetAll(predicate, paginationPropreties);
+            var cars = await _carRepository.GetAll(carFilters, paginationPropreties);
 
             return Ok(cars);
         }
@@ -81,7 +49,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(int id)
         {
-            var car = await _carRepository.Get(x => x.Id == id);
+            var car = await _carRepository.GetDtoById(id);
 
             if (car == null)
             {
@@ -93,7 +61,7 @@ namespace MyWarsha_API.Controllers
 
         [HttpPost]
         [ProducesResponseType(201)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Create([FromBody] CarCreateDto carCreateDto)
         {
             var car = new Car
@@ -104,19 +72,35 @@ namespace MyWarsha_API.Controllers
                 MotorNumber = carCreateDto.MotorNumber,
                 Notes = carCreateDto.Notes,
                 ClientId = carCreateDto.ClientId,
-                CarInfoId = carCreateDto.CarInfoId
+                CarGenerationId = carCreateDto.CarGenerationId,
             };
 
-            await _carRepository.Add(car);
-            await _carRepository.SaveChanges();
-
-            return CreatedAtAction(nameof(GetById), new { id = car.Id }, new {CarId = car.Id });
+            try
+            {
+                await _carRepository.Add(car);
+                await _carRepository.SaveChanges();
+                return CreatedAtAction(nameof(GetById), new { id = car.Id }, new CarDto
+                {
+                    Id = car.Id,
+                    Color = car.Color,
+                    PlateNumber = car.PlateNumber,
+                    ChassisNumber = car.ChassisNumber,
+                    MotorNumber = car.MotorNumber,
+                    Notes = car.Notes,
+                    ClientId = car.ClientId,
+                    CarGenerationId = car.CarGenerationId,
+                });
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "There is already another car with the same plate number." });
+            }
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Update(int id, [FromBody] CarUpdateDto carUpdateDto)
         {
             var car = await _carRepository.GetById(id);
@@ -131,25 +115,26 @@ namespace MyWarsha_API.Controllers
             car.ChassisNumber = carUpdateDto.ChassisNumber ?? car.ChassisNumber;
             car.MotorNumber = carUpdateDto.MotorNumber ?? car.MotorNumber;
             car.Notes = carUpdateDto.Notes ?? car.Notes;
+            car.CarGenerationId = carUpdateDto.CarGenerationId ?? car.CarGenerationId;
 
-            if (carUpdateDto.CarInfoId != null)
+
+
+            try
             {
-                var CheckCarInfo = await _carInfoRepository.GetById(carUpdateDto.CarInfoId.Value);
-                if (CheckCarInfo != null)
-                {
-                    car.CarInfoId = carUpdateDto.CarInfoId.Value;
-                }
+                _carRepository.Update(car);
+                await _carRepository.SaveChanges();
+                return NoContent();
             }
-
-            _carRepository.Update(car);
-            await _carRepository.SaveChanges();
-
-            return NoContent();
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "There is already another car with the same plate number." });
+            }
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Delete(int id)
         {
             var car = await _carRepository.GetById(id);
@@ -159,58 +144,31 @@ namespace MyWarsha_API.Controllers
                 return NotFound();
             }
 
-            var carImages = await _carImageRepository.GetAllEntities(id);
-
-            foreach (var carImage in carImages)
+            try
             {
-                await _deleteImageService.DeleteImage(carImage.ImagePath);
+                _carRepository.Delete(car);
+                await _carRepository.SaveChanges();
+
+                var images = await _carImageRepository.GetAllEntities(id);
+
+                foreach (var image in images)
+                {
+                    await _deleteImageService.DeleteImage(image.ImagePath);
+                }
+
+                return NoContent();
             }
-
-            _carRepository.Delete(car);
-
-            await _carRepository.SaveChanges();
-
-            return NoContent();
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 547))
+            {
+                return Conflict(new { message = "This car has a Service You have to Delete the Service First." });
+            }
         }
 
         [HttpGet("count")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> Count([FromQuery] CarFilters carFilters)
         {
-
-            var predicate = PredicateBuilder.New<Car>(true);
-
-            if (!string.IsNullOrEmpty(carFilters.PlateNumber))
-            {
-                predicate = predicate.And(c => c.PlateNumber.Contains(carFilters.PlateNumber));
-            }
-
-            if (!string.IsNullOrEmpty(carFilters.Color))
-            {
-                predicate = predicate.And(c => c.Color != null && c.Color == carFilters.Color);
-            }
-
-            if (!string.IsNullOrEmpty(carFilters.ChassisNumber))
-            {
-                predicate = predicate.And(c => c.ChassisNumber != null && c.ChassisNumber.StartsWith(carFilters.ChassisNumber));
-            }
-
-            if (!string.IsNullOrEmpty(carFilters.MotorNumber))
-            {
-                predicate = predicate.And(c => c.MotorNumber != null && c.MotorNumber.StartsWith(carFilters.MotorNumber));
-            }
-
-            if (carFilters.ClientId != null)
-            {
-                predicate = predicate.And(c => c.ClientId == carFilters.ClientId);
-            }
-
-            if (carFilters.CarInfoId != null)
-            {
-                predicate = predicate.And(c => c.CarInfoId == carFilters.CarInfoId);
-            }
-
-            var count = await _carRepository.CountFilter(predicate);
+            var count = await _carRepository.CountFilter(carFilters);
             return Ok(count);
         }
 

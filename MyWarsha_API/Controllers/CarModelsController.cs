@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.CarModelDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
@@ -39,6 +41,7 @@ namespace MyWarsha_API.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Create([FromBody] CarModelCreateDto carModelCreateDto)
         {
             CarModel carModel = new()
@@ -48,15 +51,22 @@ namespace MyWarsha_API.Controllers
                 CarMakerId = carModelCreateDto.CarMakerId
             };
 
-            await _carModelRepository.Add(carModel);
-            await _carModelRepository.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = carModel.Id }, carModel);
+            try
+            {
+                await _carModelRepository.Add(carModel);
+                await _carModelRepository.SaveChanges();
+                return CreatedAtAction(nameof(GetById), new { id = carModel.Id }, carModel);
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "CarModel already exists" });
+            }
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Update(int id, [FromBody] CarModelUpdateDto carModelUpdateDto)
         {
             CarModel? carModel = await _carModelRepository.GetById(id);
@@ -65,24 +75,39 @@ namespace MyWarsha_API.Controllers
             carModel.Name = carModelUpdateDto.Name ?? carModel.Name;
             carModel.Notes = carModelUpdateDto.Notes ?? carModel.Notes;
 
-            _carModelRepository.Update(carModel);
-            await _carModelRepository.SaveChanges();
+            try
+            {
+                _carModelRepository.Update(carModel);
+                await _carModelRepository.SaveChanges();
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "CarModel already exists" });
+            }
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Delete(int id)
         {
             CarModel? carModel = await _carModelRepository.GetById(id);
             if (carModel == null) return NotFound();
 
-            _carModelRepository.Delete(carModel);
-            await _carModelRepository.SaveChanges();
+            try
+            {
+                _carModelRepository.Delete(carModel);
+                await _carModelRepository.SaveChanges();
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && sqlException.Number == 547)
+            {
+                return Conflict(new { message = "CarModel is in use by a car that does already have a service." });
+            }
         }
 
         [HttpGet("count")]

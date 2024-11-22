@@ -17,20 +17,5 @@ namespace MyWarsha_DTOs.ServiceDTOs
         public string? Note { get; set; }
         public List<ProductToSellDto> ProductsToSell { get; set; } = [];
         public List<ServiceFeeDto> ServiceFees { get; set; } = [];
-
-        public static ServiceDto ToServiceDto(Service service)
-        {
-            return new ServiceDto
-            {
-                Id = service.Id,
-                Date = service.Date.ToString("yyyy-MM-dd"),
-                Client = ClientDtoForService.ToClientDtoForService(service.Client),
-                Car = CarDto.ToCarDto(service.Car),
-                Status = service.Status,
-                Note = service.Note,
-                ProductsToSell = service.ProductsToSell.Select(ProductToSellDto.FromProductToSell).ToList(),
-                ServiceFees = service.ServiceFees.Select(ServiceFeeDto.FromServiceFee).ToList()
-            };
-        }
     }
 }

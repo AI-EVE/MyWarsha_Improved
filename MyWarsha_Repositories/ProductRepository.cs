@@ -2,9 +2,14 @@ using System.Globalization;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using MyWarsha_DataAccess.Data;
+using MyWarsha_DTOs.CategoryDTOs;
+using MyWarsha_DTOs.ProductBrandDTOs;
 using MyWarsha_DTOs.ProductDTOs;
+using MyWarsha_DTOs.ProductImageDTOs;
+using MyWarsha_DTOs.ProductTypeDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
+using Utils.FilteringUtils.ProductFilters;
 using Utils.PageUtils;
 
 namespace MyWarsha_Repositories
@@ -19,25 +24,43 @@ namespace MyWarsha_Repositories
             _context = context;
         }
 
-        public async Task<ProductDto?> Get(Expression<Func<Product, bool>> predicate)
+        public async Task<ProductDto?> Get(int id)
         {
-            return await _context.Product
-                .Where(predicate)
-                .Include(p => p.Category)
-                .Include(p => p.ProductType)
-                .Include(p => p.ProductBrand)
-                .Include(p => p.ProductImages)
-                .Include(p => p.CarInfoProduct)
-                    .ThenInclude(cip => cip.CarInfo)
-                        .ThenInclude(ci => ci.CarMaker)
-                .Include(p => p.CarInfoProduct)
-                    .ThenInclude(cip => cip.CarInfo)
-                        .ThenInclude(ci => ci.CarModel)
-                .Include(p => p.CarInfoProduct)
-                    .ThenInclude(cip => cip.CarInfo)
-                        .ThenInclude(ci => ci.CarGeneration)
-                .Select(p => ProductDto.ToProductDto(p))
-                .FirstOrDefaultAsync();
+
+            return await _context.Product.Where(p => p.Id == id).Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Category = new CategoryDto
+                {
+                    Id = p.Category.Id,
+                    Name = p.Category.Name
+                },
+                ProductType = new ProductTypeDto
+                {
+                    Id = p.ProductType.Id,
+                    Name = p.ProductType.Name
+                },
+                ProductBrand = new ProductBrandDto
+                {
+                    Id = p.ProductBrand.Id,
+                    Name = p.ProductBrand.Name
+                },
+                DateAdded = p.DateAdded,
+                Description = p.Description,
+                ListPrice = p.ListPrice,
+                SalePrice = p.SalePrice,
+                Stock = p.Stock,
+                IsAvailable = p.IsAvailable,
+
+                ProductImages = p.ProductImages.Select(pi => new ProductImageDto
+                {
+                    Id = pi.Id,
+                    ImageUrl = pi.ImageUrl,
+                    IsMain = pi.IsMain,
+                    ProductId = pi.ProductId
+                }).ToList()
+            }).AsNoTracking().FirstOrDefaultAsync();
         }
 
         public async Task<string?> GetProductName(int id)
@@ -45,14 +68,59 @@ namespace MyWarsha_Repositories
             return await _context.Product.Where(x => x.Id == id).Select(x => x.Name).FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<ProductDtoMulti>> GetAll(PaginationPropreties paginationPropreties, Expression<Func<Product, bool>> predicate)
+        public async Task<IEnumerable<ProductDtoMulti>> GetAll(PaginationPropreties paginationPropreties, ProductFilters filters)
         {
-            var query = _context.Product
-                .Where(predicate)
-                .Include(p => p.ProductImages)
-                .Select(p => ProductDtoMulti.ToProductDtoMulti(p));
+            var query = _context.Product.AsQueryable();
 
-            return await paginationPropreties.ApplyPagination(query).ToListAsync();
+            if (filters.Name != null)
+            {
+                query = query.Where(p => p.Name.Contains(filters.Name));
+            }
+
+            if (filters.CategoryId != null)
+            {
+                query = query.Where(p => p.CategoryId == filters.CategoryId);
+            }
+
+            if (filters.ProductTypeId != null)
+            {
+                query = query.Where(p => p.ProductTypeId == filters.ProductTypeId);
+            }
+
+            if (filters.ProductBrandId != null)
+            {
+                query = query.Where(p => p.ProductBrandId == filters.ProductBrandId);
+            }
+
+            if (filters.IsAvailable != null)
+            {
+                query = query.Where(p => p.IsAvailable == filters.IsAvailable);
+            }
+
+            query = paginationPropreties.ApplyPagination(query);
+
+            return await query.Select(p => new ProductDtoMulti
+            {
+                Id = p.Id,
+                CategoryId = p.CategoryId,
+                Name = p.Name,
+                DateAdded = p.DateAdded,
+                Description = p.Description,
+                ListPrice = p.ListPrice,
+                SalePrice = p.SalePrice,
+                Stock = p.Stock,
+                IsAvailable = p.IsAvailable,
+                MainProductImage = p.ProductImages.Count > 0 ? p.ProductImages.Where(pi => pi.IsMain).Select(pi => new ProductImageDto
+                {
+                    Id = pi.Id,
+                    ImageUrl = pi.ImageUrl,
+                    IsMain = pi.IsMain,
+                    ProductId = pi.ProductId
+                }).FirstOrDefault() : null
+
+            }).AsNoTracking().ToListAsync();
+
+
         }
 
 
@@ -62,32 +130,36 @@ namespace MyWarsha_Repositories
         }
 
 
-        public async Task<int> Count(Expression<Func<Product, bool>> predicate)
+        public async Task<int> Count(ProductFilters filters)
         {
-            return await _context.Product.CountAsync(predicate);
-        }
+            var query = _context.Product.AsQueryable();
 
-        public async Task<int> Stock(int id)
-        {
-            var product = await _context.Product
-                .Where(p => p.Id == id)
-                .Include(p => p.ProductsToSell)
-                .Include(pb => pb.ProductsBought)
-                .FirstOrDefaultAsync();
-
-            var productsToSell = product != null ? product.ProductsToSell.Sum(p => p.Count) : 0;
-
-            var productsBought = product != null ? product.ProductsBought.Sum(p => p.Count) : 0;
-
-            var stock = productsBought - productsToSell;
-
-            if (stock < 0)
+            if (filters.Name != null)
             {
-                stock = 0;
+                query = query.Where(p => p.Name.Contains(filters.Name));
             }
 
-            return stock;
+            if (filters.CategoryId != null)
+            {
+                query = query.Where(p => p.CategoryId == filters.CategoryId);
+            }
 
+            if (filters.ProductTypeId != null)
+            {
+                query = query.Where(p => p.ProductTypeId == filters.ProductTypeId);
+            }
+
+            if (filters.ProductBrandId != null)
+            {
+                query = query.Where(p => p.ProductBrandId == filters.ProductBrandId);
+            }
+
+            if (filters.IsAvailable != null)
+            {
+                query = query.Where(p => p.IsAvailable == filters.IsAvailable);
+            }
+
+            return await query.CountAsync();
         }
     }
 }

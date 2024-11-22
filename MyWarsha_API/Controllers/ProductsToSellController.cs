@@ -22,7 +22,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAll([FromQuery] PaginationPropreties paginationPropreties, [FromQuery] ProductToSellFilters productToSellFilters)
         {
-            var productsToSell = await _productToSellRepository.GetAll(productToSellFilters.GetExpression(), paginationPropreties);
+            var productsToSell = await _productToSellRepository.GetAll(productToSellFilters, paginationPropreties);
             return Ok(productsToSell);
         }
 
@@ -31,7 +31,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(int id)
         {
-            var productToSell = await _productToSellRepository.Get(x => x.Id == id);
+            var productToSell = await _productToSellRepository.Get(id);
             return Ok(productToSell);
         }
 
@@ -39,7 +39,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetCount([FromQuery] ProductToSellFilters productToSellFilters)
         {
-            var count = await _productToSellRepository.GetCount(productToSellFilters.GetExpression());
+            var count = await _productToSellRepository.GetCount(productToSellFilters);
             return Ok(count);
         }
 
@@ -62,7 +62,7 @@ namespace MyWarsha_API.Controllers
             await _productToSellRepository.SaveChanges();
             return CreatedAtAction(nameof(GetById), new { id = productToSell.Id }, null);
         }
-        
+
         [HttpPost("bulk")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]

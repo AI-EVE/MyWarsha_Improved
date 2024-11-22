@@ -9,9 +9,9 @@ namespace MyWarsha_DTOs.CarDTOs
         public string? ChassisNumber { get; set; }
         public string? MotorNumber { get; set; }
         public string? Notes { get; set; }
-        [Required]   
+        [Required]
         public int ClientId { get; set; }
         [Required]
-        public int CarInfoId { get; set; }
+        public int CarGenerationId { get; set; }
     }
 }

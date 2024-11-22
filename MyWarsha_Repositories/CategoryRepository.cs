@@ -4,6 +4,7 @@ using MyWarsha_DataAccess.Data;
 using MyWarsha_DTOs.CategoryDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
+using Utils.FilteringUtils.CategoryFilters;
 
 namespace MyWarsha_Repositories
 {
@@ -19,7 +20,11 @@ namespace MyWarsha_Repositories
         public async Task<IEnumerable<CategoryDto>> GetAll()
         {
             return await _context.Category
-            .Select(c => CategoryDto.ToCategoryDto(c))
+            .Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name
+            })
             .AsNoTracking()
             .ToListAsync();
         }
@@ -29,13 +34,35 @@ namespace MyWarsha_Repositories
             return await _context.Category.FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task<CategoryDto?> Get(Expression<Func<Category, bool>> predicate)
+        public async Task<CategoryDto?> Get(CategoryFilters filters)
+        {
+            var query = _context.Category.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filters.Name))
+            {
+                query = query.Where(c => c.Name.Contains(filters.Name));
+            }
+
+            return await query
+            .Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name
+            }).AsNoTracking().FirstOrDefaultAsync();
+        }
+
+        public async Task<CategoryDto?> GetDtoById(int id)
         {
             return await _context.Category
-            .Where(predicate)
-            .Select(c => CategoryDto.ToCategoryDto(c))
+            .Where(c => c.Id == id)
+            .Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name
+            })
             .AsNoTracking()
             .FirstOrDefaultAsync();
+
         }
     }
 }

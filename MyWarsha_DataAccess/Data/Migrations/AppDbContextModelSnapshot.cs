@@ -228,7 +228,7 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CarInfoId")
+                    b.Property<int>("CarGenerationId")
                         .HasColumnType("int");
 
                     b.Property<string>("ChassisNumber")
@@ -248,13 +248,16 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("PlateNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CarInfoId");
+                    b.HasIndex("CarGenerationId");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("PlateNumber")
+                        .IsUnique();
 
                     b.ToTable("Car");
                 });
@@ -272,7 +275,7 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -280,6 +283,9 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CarModelId");
+
+                    b.HasIndex("Name", "CarModelId")
+                        .IsUnique();
 
                     b.ToTable("CarGeneration");
                 });
@@ -309,49 +315,6 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.ToTable("CarImage");
                 });
 
-            modelBuilder.Entity("MyWarsha_Models.Models.CarInfo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CarGenerationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CarMakerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CarModelId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CarGenerationId");
-
-                    b.HasIndex("CarMakerId");
-
-                    b.HasIndex("CarModelId");
-
-                    b.ToTable("CarInfo");
-                });
-
-            modelBuilder.Entity("MyWarsha_Models.Models.CarInfoProduct", b =>
-                {
-                    b.Property<int>("CarInfoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("CarInfoId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("CarInfoProduct");
-                });
-
             modelBuilder.Entity("MyWarsha_Models.Models.CarMaker", b =>
                 {
                     b.Property<int>("Id")
@@ -365,12 +328,15 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("CarMaker");
                 });
@@ -388,7 +354,7 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -396,6 +362,9 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CarMakerId");
+
+                    b.HasIndex("Name", "CarMakerId")
+                        .IsUnique();
 
                     b.ToTable("CarModel");
                 });
@@ -410,9 +379,12 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Category");
                 });
@@ -450,11 +422,14 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Number")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("Number", "ClientId")
+                        .IsUnique();
 
                     b.ToTable("Phone");
                 });
@@ -560,9 +535,12 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("ProductBrand");
                 });
@@ -640,9 +618,12 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("ProductType");
                 });
@@ -744,14 +725,25 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ColorDark")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ColorLight")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("ServiceStatus");
 
@@ -759,21 +751,29 @@ namespace MyWarsha_DataAccess.Data.Migrations
                         new
                         {
                             Id = 1,
+                            ColorDark = "#854d0e",
+                            ColorLight = "#fef9c3",
                             Name = "Pending"
                         },
                         new
                         {
                             Id = 2,
+                            ColorDark = "#075985",
+                            ColorLight = "#e0f2fe",
                             Name = "InProgress"
                         },
                         new
                         {
                             Id = 3,
+                            ColorDark = "#166534",
+                            ColorLight = "#dcfce7",
                             Name = "Done"
                         },
                         new
                         {
                             Id = 4,
+                            ColorDark = "#991b1b",
+                            ColorLight = "#fecaca",
                             Name = "Canceled"
                         });
                 });
@@ -831,19 +831,19 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
             modelBuilder.Entity("MyWarsha_Models.Models.Car", b =>
                 {
-                    b.HasOne("MyWarsha_Models.Models.CarInfo", "CarInfo")
-                        .WithMany()
-                        .HasForeignKey("CarInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("MyWarsha_Models.Models.CarGeneration", "CarGeneration")
+                        .WithMany("Cars")
+                        .HasForeignKey("CarGenerationId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.Client", "Client")
                         .WithMany("Cars")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("CarInfo");
+                    b.Navigation("CarGeneration");
 
                     b.Navigation("Client");
                 });
@@ -868,52 +868,6 @@ namespace MyWarsha_DataAccess.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Car");
-                });
-
-            modelBuilder.Entity("MyWarsha_Models.Models.CarInfo", b =>
-                {
-                    b.HasOne("MyWarsha_Models.Models.CarGeneration", "CarGeneration")
-                        .WithMany()
-                        .HasForeignKey("CarGenerationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MyWarsha_Models.Models.CarMaker", "CarMaker")
-                        .WithMany()
-                        .HasForeignKey("CarMakerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MyWarsha_Models.Models.CarModel", "CarModel")
-                        .WithMany()
-                        .HasForeignKey("CarModelId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CarGeneration");
-
-                    b.Navigation("CarMaker");
-
-                    b.Navigation("CarModel");
-                });
-
-            modelBuilder.Entity("MyWarsha_Models.Models.CarInfoProduct", b =>
-                {
-                    b.HasOne("MyWarsha_Models.Models.CarInfo", "CarInfo")
-                        .WithMany("CarInfoProduct")
-                        .HasForeignKey("CarInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyWarsha_Models.Models.Product", "Product")
-                        .WithMany("CarInfoProduct")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CarInfo");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.CarModel", b =>
@@ -941,19 +895,19 @@ namespace MyWarsha_DataAccess.Data.Migrations
             modelBuilder.Entity("MyWarsha_Models.Models.Product", b =>
                 {
                     b.HasOne("MyWarsha_Models.Models.Category", "Category")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.ProductBrand", "ProductBrand")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("ProductBrandId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.ProductType", "ProductType")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("ProductTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -976,7 +930,7 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.HasOne("MyWarsha_Models.Models.ProductsRestockingBill", "ProductsRestockingBill")
                         .WithMany("ProductsBought")
                         .HasForeignKey("ProductsRestockingBillId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Product");
@@ -1000,7 +954,7 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.HasOne("MyWarsha_Models.Models.Product", "Product")
                         .WithMany("ProductsToSell")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.Service", "Service")
@@ -1017,21 +971,21 @@ namespace MyWarsha_DataAccess.Data.Migrations
             modelBuilder.Entity("MyWarsha_Models.Models.Service", b =>
                 {
                     b.HasOne("MyWarsha_Models.Models.Car", "Car")
-                        .WithMany()
+                        .WithMany("Services")
                         .HasForeignKey("CarId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.Client", "Client")
-                        .WithMany()
+                        .WithMany("Services")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.ServiceStatus", "Status")
-                        .WithMany()
+                        .WithMany("Services")
                         .HasForeignKey("ServiceStatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Car");
@@ -1044,9 +998,9 @@ namespace MyWarsha_DataAccess.Data.Migrations
             modelBuilder.Entity("MyWarsha_Models.Models.ServiceFee", b =>
                 {
                     b.HasOne("MyWarsha_Models.Models.Category", "Category")
-                        .WithMany()
+                        .WithMany("ServiceFees")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.Service", "Service")
@@ -1063,11 +1017,13 @@ namespace MyWarsha_DataAccess.Data.Migrations
             modelBuilder.Entity("MyWarsha_Models.Models.Car", b =>
                 {
                     b.Navigation("CarImages");
+
+                    b.Navigation("Services");
                 });
 
-            modelBuilder.Entity("MyWarsha_Models.Models.CarInfo", b =>
+            modelBuilder.Entity("MyWarsha_Models.Models.CarGeneration", b =>
                 {
-                    b.Navigation("CarInfoProduct");
+                    b.Navigation("Cars");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.CarMaker", b =>
@@ -1080,22 +1036,39 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.Navigation("CarGenerations");
                 });
 
+            modelBuilder.Entity("MyWarsha_Models.Models.Category", b =>
+                {
+                    b.Navigation("Products");
+
+                    b.Navigation("ServiceFees");
+                });
+
             modelBuilder.Entity("MyWarsha_Models.Models.Client", b =>
                 {
                     b.Navigation("Cars");
 
                     b.Navigation("Phones");
+
+                    b.Navigation("Services");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.Product", b =>
                 {
-                    b.Navigation("CarInfoProduct");
-
                     b.Navigation("ProductImages");
 
                     b.Navigation("ProductsBought");
 
                     b.Navigation("ProductsToSell");
+                });
+
+            modelBuilder.Entity("MyWarsha_Models.Models.ProductBrand", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("MyWarsha_Models.Models.ProductType", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.ProductsRestockingBill", b =>
@@ -1108,6 +1081,11 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.Navigation("ProductsToSell");
 
                     b.Navigation("ServiceFees");
+                });
+
+            modelBuilder.Entity("MyWarsha_Models.Models.ServiceStatus", b =>
+                {
+                    b.Navigation("Services");
                 });
 #pragma warning restore 612, 618
         }

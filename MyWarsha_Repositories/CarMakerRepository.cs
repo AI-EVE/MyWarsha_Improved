@@ -30,8 +30,7 @@ namespace MyWarsha_Repositories
 
             return await paginationPropreties.ApplyPagination(query).ToListAsync();
 
-            // return await _context.CarMaker.Include(ele => ele.CarModels).ThenInclude(ele => ele.CarGenerations).Skip(paginationPropreties.Skip())
-            //     .Take(paginationPropreties.PageSize).ToListAsync();
+
         }
 
         public async Task<IEnumerable<CarMaker>> GetAll(Expression<Func<CarMaker, bool>> predicate, PaginationPropreties paginationPropreties)
@@ -39,9 +38,6 @@ namespace MyWarsha_Repositories
             var query = _context.CarMaker.Include(ele => ele.CarModels).ThenInclude(ele => ele.CarGenerations).Where(predicate);
 
             return await paginationPropreties.ApplyPagination(query).ToListAsync();
-
-            // return await _context.CarMaker.Include(ele => ele.CarModels).ThenInclude(ele => ele.CarGenerations).Where(predicate).Skip(paginationPropreties.Skip())
-            //     .Take(paginationPropreties.PageSize).ToListAsync();
         }
     }
 }

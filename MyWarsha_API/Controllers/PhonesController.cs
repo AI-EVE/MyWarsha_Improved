@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using LinqKit;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.PhoneDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
@@ -27,19 +25,9 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAll([FromQuery] PaginationPropreties paginationPropreties, [FromQuery] PhoneFilters phoneFilters)
         {
-            var predicate = PredicateBuilder.New<Phone>(true);
 
-            if (!string.IsNullOrEmpty(phoneFilters.Number))
-            {
-                predicate = predicate.And(p => p.Number.Contains(phoneFilters.Number));
-            }
 
-            if (phoneFilters.ClientId != null && phoneFilters.ClientId != 0)
-            {
-                predicate = predicate.And(p => p.ClientId == phoneFilters.ClientId);
-            }
-
-            var phones = await _phoneRepository.GetAll(predicate, paginationPropreties);
+            var phones = await _phoneRepository.GetAll(phoneFilters, paginationPropreties);
 
             return Ok(phones);
         }
@@ -49,7 +37,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(int id)
         {
-            var phone = await _phoneRepository.Get(x => x.Id == id);
+            var phone = await _phoneRepository.GetPhoneDtoById(id);
 
             if (phone == null)
             {
@@ -62,6 +50,7 @@ namespace MyWarsha_API.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Create([FromBody] PhoneCreateDto phoneCreateDto)
         {
             var phone = new Phone
@@ -70,21 +59,29 @@ namespace MyWarsha_API.Controllers
                 ClientId = phoneCreateDto.ClientId
             };
 
-            await _phoneRepository.Add(phone);
-            await _phoneRepository.SaveChanges();
-
-            return CreatedAtAction(nameof(GetById), new { id = phone.Id }, new PhoneDto
+            try
             {
-                Id = phone.Id,
-                Number = phone.Number,
-                ClientId = phone.ClientId
-            });
+                await _phoneRepository.Add(phone);
+                await _phoneRepository.SaveChanges();
+
+                return CreatedAtAction(nameof(GetById), new { id = phone.Id }, new PhoneDto
+                {
+                    Id = phone.Id,
+                    Number = phone.Number,
+                    ClientId = phone.ClientId
+                });
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "Phone number already exists" });
+            }
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Update(int id, [FromBody] PhoneUpdateDto phoneUpdateDto)
         {
             var phone = await _phoneRepository.GetById(id);
@@ -99,10 +96,17 @@ namespace MyWarsha_API.Controllers
                 phone.Number = phoneUpdateDto.Number;
             }
 
-            _phoneRepository.Update(phone);
-            await _phoneRepository.SaveChanges();
+            try
+            {
+                _phoneRepository.Update(phone);
+                await _phoneRepository.SaveChanges();
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "Phone number already exists" });
+            }
         }
 
         [HttpDelete("{id}")]
@@ -125,22 +129,9 @@ namespace MyWarsha_API.Controllers
 
         [HttpGet("count")]
         [ProducesResponseType(200)]
-        public  IActionResult Count([FromQuery] PhoneFilters phoneFilters)
+        public IActionResult Count([FromQuery] PhoneFilters phoneFilters)
         {
-            var predicate = PredicateBuilder.New<Phone>();
-
-            if (!string.IsNullOrEmpty(phoneFilters.Number))
-            {
-                predicate = predicate.And(p => p.Number.Contains(phoneFilters.Number));
-            }
-
-            if (phoneFilters.ClientId != null && phoneFilters.ClientId != 0)
-            {
-                predicate = predicate.And(p => p.ClientId == phoneFilters.ClientId);
-            }
-
-            var count = _phoneRepository.Count(predicate);
-
+            var count = _phoneRepository.Count(phoneFilters);
             return Ok(count);
         }
 
@@ -149,7 +140,6 @@ namespace MyWarsha_API.Controllers
         public IActionResult CountAll()
         {
             var count = _phoneRepository.Count();
-
             return Ok(count);
         }
     }

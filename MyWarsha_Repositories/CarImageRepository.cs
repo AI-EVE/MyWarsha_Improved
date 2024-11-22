@@ -59,5 +59,17 @@ namespace MyWarsha_Repositories
             return _context.CarImage
                 .Count(ci => ci.CarId == carId);
         }
+
+        public async Task<List<CarImage>> GetByImageIds(List<int> imageIds)
+        {
+            return await _context.CarImage
+                .Where(ci => imageIds.Contains(ci.Id))
+                .ToListAsync();
+        }
+
+        public void DeleteImages(List<CarImage> images)
+        {
+            _context.CarImage.RemoveRange(images);
+        }
     }
 }

@@ -1,6 +1,8 @@
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.ProductTypeDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
@@ -35,7 +37,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(int id)
         {
-            var productType = await _productTypeRepository.Get(pt => pt.Id == id);
+            var productType = await _productTypeRepository.GetDtoById(id);
 
             if (productType == null)
             {
@@ -51,14 +53,8 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> Search([FromQuery] ProductTypeFilters filters)
         {
-            var predicate = PredicateBuilder.New<ProductType>(true);
 
-            if (filters.Name != null)
-            {
-                predicate = predicate.And(pt => pt.Name == filters.Name);
-            }
-
-            var productType = await _productTypeRepository.Get(predicate);
+            var productType = await _productTypeRepository.Get(filters);
 
             if (productType == null)
             {
@@ -83,14 +79,21 @@ namespace MyWarsha_API.Controllers
                 Name = productTypeCreateDto.Name
             };
 
-            await _productTypeRepository.Add(productType);
-            await _productTypeRepository.SaveChanges();
-
-            return CreatedAtAction(nameof(GetById), new { id = productType.Id }, new ProductTypeDto
+            try
             {
-                Id = productType.Id,
-                Name = productType.Name
-            });
+                await _productTypeRepository.Add(productType);
+                await _productTypeRepository.SaveChanges();
+
+                return CreatedAtAction(nameof(GetById), new { id = productType.Id }, new ProductTypeDto
+                {
+                    Id = productType.Id,
+                    Name = productType.Name
+                });
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "This product type name already exists." });
+            }
         }
 
         [HttpPut("{id}")]
@@ -105,10 +108,18 @@ namespace MyWarsha_API.Controllers
             }
 
             productType.Name = productTypeUpdateDto.Name ?? productType.Name;
-            _productTypeRepository.Update(productType);
-            await _productTypeRepository.SaveChanges();
 
-            return NoContent();
+            try
+            {
+                _productTypeRepository.Update(productType);
+                await _productTypeRepository.SaveChanges();
+
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "This product type name already exists." });
+            }
         }
 
         [HttpDelete("{id}")]
@@ -124,9 +135,18 @@ namespace MyWarsha_API.Controllers
             }
 
             _productTypeRepository.Delete(productType);
-            await _productTypeRepository.SaveChanges();
 
-            return NoContent();
+
+            try
+            {
+                await _productTypeRepository.SaveChanges();
+
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 547))
+            {
+                return Conflict(new { message = "This product type is being used by other propreties, delete them first and try again." });
+            }
         }
     }
 }

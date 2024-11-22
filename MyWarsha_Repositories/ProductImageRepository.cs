@@ -62,5 +62,17 @@ namespace MyWarsha_Repositories
                 .Where(pi => pi.ProductId == productId)
                 .ToListAsync();
         }
+
+        public async Task<List<ProductImage>> GetByProductIds(List<int> ids)
+        {
+            return await _context.ProductImage
+                .Where(pi => ids.Contains(pi.ProductId))
+                .ToListAsync();
+        }
+
+        public void DeleteAll(List<ProductImage> productImages)
+        {
+            _context.ProductImage.RemoveRange(productImages);
+        }
     }
 }

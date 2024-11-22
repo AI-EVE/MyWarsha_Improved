@@ -96,6 +96,36 @@ namespace MyWarsha_API.Controllers
             });
         }
 
+        [HttpPost("AddMulty/{carId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> AddCarImages(int carId, [FromForm] List<IFormFile> carImages)
+        {
+            var images = new List<CarImage>();
+
+            foreach (var image in carImages)
+            {
+                string? imgPath = await _uploadImageService.UploadImage(image);
+
+                if (imgPath == null)
+                {
+                    return BadRequest();
+                }
+
+                images.Add(new CarImage
+                {
+                    CarId = carId,
+                    ImagePath = imgPath,
+                    IsMain = false
+                });
+            }
+
+            await _carImageRepository.AddRange(images);
+            await _carImageRepository.SaveChanges();
+
+            return NoContent();
+        }
+
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
@@ -116,10 +146,29 @@ namespace MyWarsha_API.Controllers
             return NoContent();
         }
 
+        [HttpDelete("DeleteMany")]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> DeleteManyCarImages(List<int> ids)
+        {
+            var images = await _carImageRepository.GetByImageIds(ids);
+            var imagePaths = images.Select(i => i.ImagePath).ToList();
+
+            _carImageRepository.DeleteImages(images);
+
+            await _carImageRepository.SaveChanges();
+
+            foreach (var path in imagePaths)
+            {
+                await _deleteImageService.DeleteImage(path);
+            }
+
+            return NoContent();
+        }
+
         [HttpPut("MainImage/{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        
+
         public async Task<IActionResult> SetMainImage(int id)
         {
             var carImage = await _carImageRepository.GetById(id);

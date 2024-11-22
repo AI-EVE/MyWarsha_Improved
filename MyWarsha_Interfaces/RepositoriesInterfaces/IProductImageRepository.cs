@@ -14,5 +14,7 @@ namespace MyWarsha_Interfaces.RepositoriesInterfaces
         Task<ProductImage?> GetMainByProductId(int productId);
         Task<List<ProductImage>> GetAllByProductId(int productId);
         Task<int> DeleteAllByProductId(int productId);
+        Task<List<ProductImage>> GetByProductIds(List<int> ids);
+        void DeleteAll(List<ProductImage> productImages);
     }
 }

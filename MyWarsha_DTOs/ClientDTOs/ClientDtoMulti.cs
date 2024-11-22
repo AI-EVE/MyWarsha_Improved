@@ -1,3 +1,4 @@
+using MyWarsha_DTOs.PhoneDTOs;
 using MyWarsha_Models.Models;
 
 namespace MyWarsha_DTOs.ClientDTOs
@@ -8,6 +9,7 @@ namespace MyWarsha_DTOs.ClientDTOs
         public string Name { get; set; } = null!;
         public int CarsCount { get; set; }
         public string? Email { get; set; }
+        public List<PhoneDto> Phones = [];
 
         public static ClientDtoMulti ToClientDtoMulti(Client? client)
         {

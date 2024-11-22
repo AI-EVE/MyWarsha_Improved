@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.ProductDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Interfaces.ServicesInterfaces.AzureServicesInterfaces;
@@ -15,12 +17,10 @@ namespace MyWarsha_API.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
-        private readonly ICarinfoProductRepository _carinfoProductRepository;
 
-        public ProductController(IProductRepository productRepository, ICarinfoProductRepository carinfoProductRepository)
+        public ProductController(IProductRepository productRepository)
         {
             _productRepository = productRepository;
-            _carinfoProductRepository = carinfoProductRepository;
         }
 
 
@@ -28,7 +28,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAll([FromQuery] ProductFilters filters, [FromQuery] PaginationPropreties paginationPropreties)
         {
-            var products = await _productRepository.GetAll(paginationPropreties, filters.GetExpression());
+            var products = await _productRepository.GetAll(paginationPropreties, filters);
 
             return Ok(products);
         }
@@ -38,7 +38,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(int id)
         {
-            var product = await _productRepository.Get(p => p.Id == id);
+            var product = await _productRepository.Get(id);
 
             if (product == null)
             {
@@ -73,10 +73,17 @@ namespace MyWarsha_API.Controllers
 
 
 
-            await _carinfoProductRepository.Add(new CarInfoProduct { CarInfoId = productCreateDto.CarinfoId, Product = product });
-            await _productRepository.SaveChanges();
+            try
+            {
+                await _productRepository.Add(product);
+                await _productRepository.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = product.Id }, new { ProdcutId = product.Id });
+                return CreatedAtAction(nameof(GetById), new { id = product.Id }, new { ProdcutId = product.Id });
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2601 || sqlException.Number == 2627))
+            {
+                return Conflict(new { message = "Product name already exists" });
+            }
         }
 
         [HttpPut("{id}")]
@@ -109,6 +116,7 @@ namespace MyWarsha_API.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Delete(int id, IProductImageRepository productImageRepository, IDeleteImageService deleteImageService)
         {
             var product = await _productRepository.GetById(id);
@@ -120,15 +128,24 @@ namespace MyWarsha_API.Controllers
 
             var images = await productImageRepository.GetAllByProductId(id);
 
-            foreach (var image in images)
+            var imagesUrls = images.Select(i => i.ImageUrl).ToList();
+
+            try
             {
-                await deleteImageService.DeleteImage(image.ImageUrl);
+                _productRepository.Delete(product);
+                await _productRepository.SaveChanges();
+
+                foreach (var imageUrl in imagesUrls)
+                {
+                    await deleteImageService.DeleteImage(imageUrl);
+                }
+
+                return NoContent();
             }
-            _productRepository.Delete(product);
-            await _productRepository.SaveChanges();
-
-
-            return NoContent();
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && sqlException.Number == 547)
+            {
+                return Conflict(new { message = "This product is used in product bought or a product sold and cant be removed" });
+            }
         }
 
         [HttpGet("count")]
@@ -136,7 +153,7 @@ namespace MyWarsha_API.Controllers
         public async Task<IActionResult> Count([FromQuery] ProductFilters filters)
         {
 
-            var count = await _productRepository.Count(filters.GetExpression());
+            var count = await _productRepository.Count(filters);
 
             return Ok(count);
         }

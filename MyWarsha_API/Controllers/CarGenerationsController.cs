@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.CarGenerationDtos;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
@@ -39,7 +40,7 @@ namespace MyWarsha_API.Controllers
 
         [HttpPost]
         [ProducesResponseType(201)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Create([FromBody] CarGenerationCreateDto carGenerationCreateDto)
         {
             CarGeneration carGeneration = new()
@@ -49,15 +50,23 @@ namespace MyWarsha_API.Controllers
                 CarModelId = carGenerationCreateDto.CarModelId
             };
 
-            await _carGenerationRepository.Add(carGeneration);
-            await _carGenerationRepository.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = carGeneration.Id }, carGeneration);
+            try
+            {
+                await _carGenerationRepository.Add(carGeneration);
+                await _carGenerationRepository.SaveChanges();
+                return CreatedAtAction(nameof(GetById), new { id = carGeneration.Id }, carGeneration);
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "Car generation already exists" });
+            }
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Update(int id, [FromBody] CarGenerationUpdateDto carGenerationUpdateDto)
         {
             CarGeneration? carGeneration = await _carGenerationRepository.GetById(id);
@@ -66,10 +75,17 @@ namespace MyWarsha_API.Controllers
             carGeneration.Name = carGenerationUpdateDto.Name ?? carGeneration.Name;
             carGeneration.Notes = carGenerationUpdateDto.Notes ?? carGeneration.Notes;
 
-            _carGenerationRepository.Update(carGeneration);
-            await _carGenerationRepository.SaveChanges();
+            try
+            {
+                _carGenerationRepository.Update(carGeneration);
+                await _carGenerationRepository.SaveChanges();
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "Car generation already exists" });
+            }
         }
 
         [HttpDelete("{id}")]
@@ -80,10 +96,17 @@ namespace MyWarsha_API.Controllers
             CarGeneration? carGeneration = await _carGenerationRepository.GetById(id);
             if (carGeneration == null) return NotFound();
 
-            _carGenerationRepository.Delete(carGeneration);
-            await _carGenerationRepository.SaveChanges();
+            try
+            {
+                _carGenerationRepository.Delete(carGeneration);
+                await _carGenerationRepository.SaveChanges();
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && sqlException.Number == 547)
+            {
+                return Conflict(new { message = "Car generation is in use by a car or a product, delete all the associated propreties first then try again." });
+            }
         }
 
         [HttpGet("count")]

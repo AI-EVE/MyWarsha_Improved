@@ -12,19 +12,5 @@ namespace MyWarsha_DTOs.ServiceFeeDTOs
         public string? Notes { get; set; }
         public int CategoryId { get; set; }
         public int ServiceId { get; set; }
-        public static ServiceFeeDto FromServiceFee(ServiceFee serviceFee)
-        {
-            return new ServiceFeeDto
-            {
-                Id = serviceFee.Id,
-                Price = serviceFee.Price,
-                Discount = serviceFee.Discount,
-                IsReturned = serviceFee.IsReturned,
-                Notes = serviceFee.Notes,
-                CategoryId = serviceFee.CategoryId,
-                ServiceId = serviceFee.ServiceId,
-                TotalPriceAfterDiscount = serviceFee.Price - serviceFee.Discount
-            };
-        }        
     }
 }

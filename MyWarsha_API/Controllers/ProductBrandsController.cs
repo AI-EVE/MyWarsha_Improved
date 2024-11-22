@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.ProductBrandDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
@@ -39,7 +36,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(int id)
         {
-            var productBrand = await _productBrandRepository.Get(pb => pb.Id == id);
+            var productBrand = await _productBrandRepository.GetProductBrandDtoById(id);
 
             if (productBrand == null)
             {
@@ -55,14 +52,8 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> Search([FromQuery] ProductBrandFilters filters)
         {
-            var predicate = PredicateBuilder.New<ProductBrand>(true);
 
-            if (filters.Name != null)
-            {
-                predicate = predicate.And(pb => pb.Name == filters.Name);
-            }
-
-            var productBrand = await _productBrandRepository.Get(predicate);
+            var productBrand = await _productBrandRepository.Get(filters);
 
             if (productBrand == null)
             {
@@ -75,30 +66,35 @@ namespace MyWarsha_API.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Create([FromBody] ProductBrandCreateDto productBrandCreateDto)
         {
-            if (productBrandCreateDto == null)
-            {
-                return BadRequest();
-            }
-
             var productBrand = new ProductBrand
             {
                 Name = productBrandCreateDto.Name
             };
 
-            await _productBrandRepository.Add(productBrand);
-            await _productBrandRepository.SaveChanges();
-
-            return CreatedAtAction(nameof(GetById), new { id = productBrand.Id }, new ProductBrandDto
+            try
             {
-                Id = productBrand.Id,
-                Name = productBrand.Name
-            });
+                await _productBrandRepository.Add(productBrand);
+                await _productBrandRepository.SaveChanges();
+
+                return CreatedAtAction(nameof(GetById), new { id = productBrand.Id }, new ProductBrandDto
+                {
+                    Id = productBrand.Id,
+                    Name = productBrand.Name
+                });
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "Product Brand already exists" });
+            }
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Update(int id, [FromBody] ProductBrandUpdateDto productBrandUpdateDto)
         {
             var productBrand = await _productBrandRepository.GetById(id);
@@ -110,15 +106,24 @@ namespace MyWarsha_API.Controllers
 
             productBrand.Name = productBrandUpdateDto.Name ?? productBrand.Name;
 
-            _productBrandRepository.Update(productBrand);
-            await _productBrandRepository.SaveChanges();
 
-            return NoContent();
+            try
+            {
+                _productBrandRepository.Update(productBrand);
+                await _productBrandRepository.SaveChanges();
+
+                return NoContent();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && sqlEx.Number == 2627)
+            {
+                return Conflict(new { message = "Product Brand already exists" });
+            }
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Delete(int id)
         {
             var productBrand = await _productBrandRepository.GetById(id);
@@ -128,10 +133,17 @@ namespace MyWarsha_API.Controllers
                 return NotFound();
             }
 
-            _productBrandRepository.Delete(productBrand);
-            await _productBrandRepository.SaveChanges();
+            try
+            {
+                _productBrandRepository.Delete(productBrand);
+                await _productBrandRepository.SaveChanges();
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && sqlEx.Number == 547)
+            {
+                return Conflict(new { message = "Product Brand is in use by a product, you should delete the product first then try again." });
+            }
         }
     }
 }

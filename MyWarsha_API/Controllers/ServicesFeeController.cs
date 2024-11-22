@@ -22,16 +22,16 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAll([FromQuery] PaginationPropreties paginationPropreties, [FromQuery] ServiceFeeFilters serviceFeeFilters)
         {
-            var servicesFee = await _serviceFeeRepository.GetAll(serviceFeeFilters.GetExpression(), paginationPropreties);
+            var servicesFee = await _serviceFeeRepository.GetAll(serviceFeeFilters, paginationPropreties);
             return Ok(servicesFee);
-        }       
+        }
 
         [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetById(int id)
         {
-            var serviceFee = await _serviceFeeRepository.Get(x => x.Id == id);
+            var serviceFee = await _serviceFeeRepository.Get(id);
 
             if (serviceFee == null)
             {
@@ -44,7 +44,7 @@ namespace MyWarsha_API.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetCount([FromQuery] ServiceFeeFilters serviceFeeFilters)
         {
-            var count = await _serviceFeeRepository.GetCount(serviceFeeFilters.GetExpression());
+            var count = await _serviceFeeRepository.GetCount(serviceFeeFilters);
             return Ok(count);
         }
 

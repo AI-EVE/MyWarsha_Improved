@@ -11,5 +11,7 @@ namespace MyWarsha_Interfaces.RepositoriesInterfaces
         Task<CarImage?> GetMainImageEntity(int carId);
         int Count(int carId);
         Task<CarImage?> GetById(int id);
+        Task<List<CarImage>> GetByImageIds(List<int> imageIds);
+        void DeleteImages(List<CarImage> images);
     }
 }

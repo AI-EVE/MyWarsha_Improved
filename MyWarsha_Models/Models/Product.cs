@@ -24,13 +24,12 @@ namespace MyWarsha_Models.Models
         [Column(TypeName = "decimal(18, 2)")]
         [Required]
         public decimal ListPrice { get; set; }
-        
+
         [Column(TypeName = "decimal(18, 2)")]
         [Required]
         public decimal SalePrice { get; set; }
         public int Stock { get; set; }
         public bool IsAvailable { get; set; }
-        public List<CarInfoProduct> CarInfoProduct { get; set; } = [];
         public List<ProductImage> ProductImages { get; set; } = [];
         public List<ProductToSell> ProductsToSell { get; set; } = [];
         public List<ProductBought> ProductsBought { get; set; } = [];

@@ -4,6 +4,7 @@ using MyWarsha_DataAccess.Data;
 using MyWarsha_DTOs.ProductBrandDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
+using Utils.FilteringUtils.ProductBrandFilters;
 
 namespace MyWarsha_Repositories
 {
@@ -19,7 +20,11 @@ namespace MyWarsha_Repositories
         public async Task<IEnumerable<ProductBrandDto>> GetAll()
         {
             return await _context.ProductBrand
-            .Select(pb => ProductBrandDto.ToProductBrandDto(pb))
+            .Select(pb => new ProductBrandDto
+            {
+                Id = pb.Id,
+                Name = pb.Name
+            })
             .AsNoTracking()
             .ToListAsync();
         }
@@ -29,13 +34,36 @@ namespace MyWarsha_Repositories
             return await _context.ProductBrand.FirstOrDefaultAsync(pb => pb.Id == id);
         }
 
-        public async Task<ProductBrandDto?> Get(Expression<Func<ProductBrand, bool>> predicate)
+        public async Task<ProductBrandDto?> Get(ProductBrandFilters filters)
         {
-            return await _context.ProductBrand
-            .Where(predicate)
-            .Select(pb => ProductBrandDto.ToProductBrandDto(pb))
+            var query = _context.ProductBrand.AsQueryable();
+            if (filters.Name != null)
+            {
+                query = query.Where(pb => pb.Name == filters.Name);
+            }
+
+            return await query
+            .Select(pb => new ProductBrandDto
+            {
+                Id = pb.Id,
+                Name = pb.Name
+            })
             .AsNoTracking()
             .FirstOrDefaultAsync();
         }
+
+        public async Task<ProductBrandDto?> GetProductBrandDtoById(int id)
+        {
+            return await _context.ProductBrand
+            .Where(pb => pb.Id == id)
+            .Select(pb => new ProductBrandDto
+            {
+                Id = pb.Id,
+                Name = pb.Name
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+        }
+
     }
 }

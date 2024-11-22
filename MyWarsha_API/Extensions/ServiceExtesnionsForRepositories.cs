@@ -9,7 +9,6 @@ namespace MyWarsha_API.Extensions
     {
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
-            services.AddScoped<ICarInfoRepository, CarInfoRepository>();
             services.AddScoped<ICarMakerRepository, CarMakerRepository>();
             services.AddScoped<ICarModelRepository, CarModelRepository>();
             services.AddScoped<ICarGenerationRepository, CarGenerationRepository>();
@@ -29,7 +28,6 @@ namespace MyWarsha_API.Extensions
             services.AddScoped<IServiceFeeRepository, ServiceFeeRepository>();
             services.AddScoped<IServiceStatusRepository, ServiceStatusRepository>();
             services.AddScoped<IJWTTokenGeneratorService, JWTTokenGeneratorService>();
-            services.AddScoped<ICarinfoProductRepository, CarinfoProductRepository>();
 
             return services;
         }

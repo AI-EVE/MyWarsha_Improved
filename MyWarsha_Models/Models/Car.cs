@@ -6,7 +6,7 @@ namespace MyWarsha_Models.Models
     public class Car
     {
         public int Id { get; set; }
-        
+
         public string? Color { get; set; }
         [Required]
         public string PlateNumber { get; set; } = null!;
@@ -14,13 +14,15 @@ namespace MyWarsha_Models.Models
         public string? MotorNumber { get; set; }
         public string? Notes { get; set; }
         public List<CarImage> CarImages { get; set; } = [];
-        
+
+        public List<Service> Services { get; set; } = [];
+
         [ForeignKey("ClientId")]
         public Client Client { get; set; } = null!;
         public int ClientId { get; set; }
 
-        [ForeignKey("CarInfoId")]
-        public CarInfo CarInfo { get; set; } = null!;
-        public int CarInfoId { get; set; }
+        [ForeignKey("CarGenerationId")]
+        public CarGeneration CarGeneration { get; set; } = null!;
+        public int CarGenerationId { get; set; }
     }
 }

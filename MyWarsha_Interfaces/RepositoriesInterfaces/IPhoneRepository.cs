@@ -1,17 +1,19 @@
 using System.Linq.Expressions;
 using MyWarsha_DTOs.PhoneDTOs;
 using MyWarsha_Models.Models;
+using Utils.FilteringUtils.PhoneFilters;
 using Utils.PageUtils;
 
 namespace MyWarsha_Interfaces.RepositoriesInterfaces
 {
     public interface IPhoneRepository : IRepository<Phone>
     {
-        Task<IEnumerable<PhoneDto>> GetAll(Expression<Func<Phone, bool>> predicate, PaginationPropreties paginationPropreties);
-        Task<PhoneDto?> Get(Expression<Func<Phone, bool>> predicate);
+        Task<IEnumerable<PhoneDto>> GetAll(PhoneFilters filters, PaginationPropreties paginationPropreties);
+        Task<PhoneDto?> Get(PhoneFilters filters);
         Task<Phone?> GetById(int id);
         // write deleterange methode
 
-        int Count(Expression<Func<Phone, bool>> predicate);
+        int Count(PhoneFilters filters);
+        Task<PhoneDto?> GetPhoneDtoById(int id);
     }
 }

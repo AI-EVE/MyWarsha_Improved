@@ -71,7 +71,7 @@ namespace MyWarsha_API.Controllers
             if (productImage.IsMain)
             {
                 ProductImage? mainProductImage = await _productImageRepository.GetMainByProductId(productImage.ProductId);
-                
+
                 if (mainProductImage != null)
                 {
                     mainProductImage.IsMain = false;
@@ -90,6 +90,36 @@ namespace MyWarsha_API.Controllers
                 IsMain = productImage.IsMain,
                 ProductId = productImage.ProductId
             });
+        }
+
+        [HttpPost("AddMulty/{productId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> AddCarImages(int productId, [FromForm] List<IFormFile> productImages)
+        {
+            var images = new List<ProductImage>();
+
+            foreach (var image in productImages)
+            {
+                string? imageUrl = await _uploadImageService.UploadImage(image);
+
+                if (imageUrl == null)
+                {
+                    return BadRequest();
+                }
+
+                images.Add(new ProductImage
+                {
+                    ProductId = productId,
+                    ImageUrl = imageUrl,
+                    IsMain = false
+                });
+            }
+
+            await _productImageRepository.AddRange(images);
+            await _productImageRepository.SaveChanges();
+
+            return NoContent();
         }
 
         [HttpPut("{id}")]
@@ -140,7 +170,7 @@ namespace MyWarsha_API.Controllers
             }
 
             _productImageRepository.Delete(productImage);
-            await _productImageRepository.SaveChanges();            
+            await _productImageRepository.SaveChanges();
 
             return NoContent();
         }
@@ -169,6 +199,25 @@ namespace MyWarsha_API.Controllers
 
             return NoContent();
         }
-       
+
+        [HttpDelete("DeleteMany")]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> DeleteManyCarImages(List<int> ids)
+        {
+            var images = await _productImageRepository.GetByProductIds(ids);
+            var imageUrls = images.Select(i => i.ImageUrl).ToList();
+
+            _productImageRepository.DeleteAll(images);
+
+            await _productImageRepository.SaveChanges();
+
+            foreach (var url in imageUrls)
+            {
+                await _deleteImageService.DeleteImage(url);
+            }
+
+            return NoContent();
+        }
+
     }
 }

@@ -12,8 +12,8 @@ using MyWarsha_DataAccess.Data;
 namespace MyWarsha_DataAccess.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240920201222_AddingDateToServiceTable")]
-    partial class AddingDateToServiceTable
+    [Migration("20241120120503_SetUpUniqueIndexes")]
+    partial class SetUpUniqueIndexes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,19 +25,202 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("CarInfoProduct", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
-                    b.Property<int>("CarInfosId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ProductsName")
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("CarInfosId", "ProductsName");
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasIndex("ProductsName");
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.ToTable("CarInfoProduct");
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("MyWarsha_Models.Models.AppUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.Car", b =>
@@ -48,7 +231,7 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CarInfoId")
+                    b.Property<int>("CarGenerationId")
                         .HasColumnType("int");
 
                     b.Property<string>("ChassisNumber")
@@ -68,13 +251,16 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("PlateNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CarInfoId");
+                    b.HasIndex("CarGenerationId");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("PlateNumber")
+                        .IsUnique();
 
                     b.ToTable("Car");
                 });
@@ -92,7 +278,7 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -100,6 +286,9 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CarModelId");
+
+                    b.HasIndex("Name", "CarModelId")
+                        .IsUnique();
 
                     b.ToTable("CarGeneration");
                 });
@@ -129,34 +318,6 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.ToTable("CarImage");
                 });
 
-            modelBuilder.Entity("MyWarsha_Models.Models.CarInfo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CarGenerationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CarMakerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CarModelId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CarGenerationId");
-
-                    b.HasIndex("CarMakerId");
-
-                    b.HasIndex("CarModelId");
-
-                    b.ToTable("CarInfo");
-                });
-
             modelBuilder.Entity("MyWarsha_Models.Models.CarMaker", b =>
                 {
                     b.Property<int>("Id")
@@ -170,12 +331,15 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("CarMaker");
                 });
@@ -193,7 +357,7 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -201,6 +365,9 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CarMakerId");
+
+                    b.HasIndex("Name", "CarMakerId")
+                        .IsUnique();
 
                     b.ToTable("CarModel");
                 });
@@ -215,9 +382,12 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Category");
                 });
@@ -255,19 +425,25 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Number")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("Number", "ClientId")
+                        .IsUnique();
 
                     b.ToTable("Phone");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.Product", b =>
                 {
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
@@ -276,11 +452,17 @@ namespace MyWarsha_DataAccess.Data.Migrations
                         .HasColumnType("date");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
 
                     b.Property<decimal>("ListPrice")
                         .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("ProductBrandId")
                         .HasColumnType("int");
@@ -294,12 +476,12 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
-                    b.Property<int>("UnitsSold")
-                        .HasColumnType("int");
-
-                    b.HasKey("Name");
+                    b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.HasIndex("ProductBrandId");
 
@@ -316,30 +498,32 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("BoughtFor")
-                        .HasColumnType("decimal(18, 2)");
-
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<bool>("IsReturned")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("RelevantDataToTheBoughtId")
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PricePerUnit")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Total")
-                        .HasColumnType("decimal(18, 2)");
+                    b.Property<int>("ProductsRestockingBillId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductName");
+                    b.HasIndex("ProductId");
 
-                    b.HasIndex("RelevantDataToTheBoughtId");
+                    b.HasIndex("ProductsRestockingBillId");
 
                     b.ToTable("ProductBought");
                 });
@@ -354,9 +538,12 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("ProductBrand");
                 });
@@ -376,13 +563,12 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.Property<bool>("IsMain")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductName");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductImage");
                 });
@@ -401,19 +587,24 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<bool>("IsReturned")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PricePerUnit")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
 
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("SoldFor")
-                        .HasColumnType("decimal(18, 2)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductName");
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("ServiceId");
 
@@ -430,14 +621,17 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("ProductType");
                 });
 
-            modelBuilder.Entity("MyWarsha_Models.Models.RelevantDataToTheBought", b =>
+            modelBuilder.Entity("MyWarsha_Models.Models.ProductsRestockingBill", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -454,7 +648,7 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RelevantDataToTheBought");
+                    b.ToTable("ProductsRestockingBill");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.Service", b =>
@@ -474,11 +668,19 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ServiceStatusId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CarId");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("ServiceStatusId");
 
                     b.ToTable("Service");
                 });
@@ -491,12 +693,14 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18, 2)");
+
+                    b.Property<bool>("IsReturned")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -509,41 +713,140 @@ namespace MyWarsha_DataAccess.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("ServiceId");
 
                     b.ToTable("ServiceFee");
                 });
 
-            modelBuilder.Entity("CarInfoProduct", b =>
+            modelBuilder.Entity("MyWarsha_Models.Models.ServiceStatus", b =>
                 {
-                    b.HasOne("MyWarsha_Models.Models.CarInfo", null)
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorDark")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ColorLight")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("ServiceStatus");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ColorDark = "#854d0e",
+                            ColorLight = "#fef9c3",
+                            Name = "Pending"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ColorDark = "#075985",
+                            ColorLight = "#e0f2fe",
+                            Name = "InProgress"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            ColorDark = "#166534",
+                            ColorLight = "#dcfce7",
+                            Name = "Done"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            ColorDark = "#991b1b",
+                            ColorLight = "#fecaca",
+                            Name = "Canceled"
+                        });
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
-                        .HasForeignKey("CarInfosId")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("MyWarsha_Models.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("MyWarsha_Models.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWarsha_Models.Models.Product", null)
+                    b.HasOne("MyWarsha_Models.Models.AppUser", null)
                         .WithMany()
-                        .HasForeignKey("ProductsName")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("MyWarsha_Models.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.Car", b =>
                 {
-                    b.HasOne("MyWarsha_Models.Models.CarInfo", "CarInfo")
-                        .WithMany()
-                        .HasForeignKey("CarInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("MyWarsha_Models.Models.CarGeneration", "CarGeneration")
+                        .WithMany("Cars")
+                        .HasForeignKey("CarGenerationId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.Client", "Client")
                         .WithMany("Cars")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("CarInfo");
+                    b.Navigation("CarGeneration");
 
                     b.Navigation("Client");
                 });
@@ -568,33 +871,6 @@ namespace MyWarsha_DataAccess.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Car");
-                });
-
-            modelBuilder.Entity("MyWarsha_Models.Models.CarInfo", b =>
-                {
-                    b.HasOne("MyWarsha_Models.Models.CarGeneration", "CarGeneration")
-                        .WithMany()
-                        .HasForeignKey("CarGenerationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("MyWarsha_Models.Models.CarMaker", "CarMaker")
-                        .WithMany()
-                        .HasForeignKey("CarMakerId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("MyWarsha_Models.Models.CarModel", "CarModel")
-                        .WithMany()
-                        .HasForeignKey("CarModelId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("CarGeneration");
-
-                    b.Navigation("CarMaker");
-
-                    b.Navigation("CarModel");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.CarModel", b =>
@@ -622,21 +898,21 @@ namespace MyWarsha_DataAccess.Data.Migrations
             modelBuilder.Entity("MyWarsha_Models.Models.Product", b =>
                 {
                     b.HasOne("MyWarsha_Models.Models.Category", "Category")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.ProductBrand", "ProductBrand")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("ProductBrandId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.ProductType", "ProductType")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("ProductTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -649,27 +925,27 @@ namespace MyWarsha_DataAccess.Data.Migrations
             modelBuilder.Entity("MyWarsha_Models.Models.ProductBought", b =>
                 {
                     b.HasOne("MyWarsha_Models.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductName")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithMany("ProductsBought")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MyWarsha_Models.Models.RelevantDataToTheBought", "RelevantDataToTheBought")
+                    b.HasOne("MyWarsha_Models.Models.ProductsRestockingBill", "ProductsRestockingBill")
                         .WithMany("ProductsBought")
-                        .HasForeignKey("RelevantDataToTheBoughtId")
+                        .HasForeignKey("ProductsRestockingBillId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Product");
 
-                    b.Navigation("RelevantDataToTheBought");
+                    b.Navigation("ProductsRestockingBill");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.ProductImage", b =>
                 {
                     b.HasOne("MyWarsha_Models.Models.Product", "Product")
                         .WithMany("ProductImages")
-                        .HasForeignKey("ProductName")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -679,9 +955,9 @@ namespace MyWarsha_DataAccess.Data.Migrations
             modelBuilder.Entity("MyWarsha_Models.Models.ProductToSell", b =>
                 {
                     b.HasOne("MyWarsha_Models.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductName")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithMany("ProductsToSell")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.Service", "Service")
@@ -698,29 +974,45 @@ namespace MyWarsha_DataAccess.Data.Migrations
             modelBuilder.Entity("MyWarsha_Models.Models.Service", b =>
                 {
                     b.HasOne("MyWarsha_Models.Models.Car", "Car")
-                        .WithMany()
+                        .WithMany("Services")
                         .HasForeignKey("CarId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MyWarsha_Models.Models.Client", "Client")
-                        .WithMany()
+                        .WithMany("Services")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MyWarsha_Models.Models.ServiceStatus", "Status")
+                        .WithMany("Services")
+                        .HasForeignKey("ServiceStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Car");
 
                     b.Navigation("Client");
+
+                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.ServiceFee", b =>
                 {
+                    b.HasOne("MyWarsha_Models.Models.Category", "Category")
+                        .WithMany("ServiceFees")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("MyWarsha_Models.Models.Service", "Service")
                         .WithMany("ServiceFees")
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("Service");
                 });
@@ -728,6 +1020,13 @@ namespace MyWarsha_DataAccess.Data.Migrations
             modelBuilder.Entity("MyWarsha_Models.Models.Car", b =>
                 {
                     b.Navigation("CarImages");
+
+                    b.Navigation("Services");
+                });
+
+            modelBuilder.Entity("MyWarsha_Models.Models.CarGeneration", b =>
+                {
+                    b.Navigation("Cars");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.CarMaker", b =>
@@ -740,19 +1039,42 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.Navigation("CarGenerations");
                 });
 
+            modelBuilder.Entity("MyWarsha_Models.Models.Category", b =>
+                {
+                    b.Navigation("Products");
+
+                    b.Navigation("ServiceFees");
+                });
+
             modelBuilder.Entity("MyWarsha_Models.Models.Client", b =>
                 {
                     b.Navigation("Cars");
 
                     b.Navigation("Phones");
+
+                    b.Navigation("Services");
                 });
 
             modelBuilder.Entity("MyWarsha_Models.Models.Product", b =>
                 {
                     b.Navigation("ProductImages");
+
+                    b.Navigation("ProductsBought");
+
+                    b.Navigation("ProductsToSell");
                 });
 
-            modelBuilder.Entity("MyWarsha_Models.Models.RelevantDataToTheBought", b =>
+            modelBuilder.Entity("MyWarsha_Models.Models.ProductBrand", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("MyWarsha_Models.Models.ProductType", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("MyWarsha_Models.Models.ProductsRestockingBill", b =>
                 {
                     b.Navigation("ProductsBought");
                 });
@@ -762,6 +1084,11 @@ namespace MyWarsha_DataAccess.Data.Migrations
                     b.Navigation("ProductsToSell");
 
                     b.Navigation("ServiceFees");
+                });
+
+            modelBuilder.Entity("MyWarsha_Models.Models.ServiceStatus", b =>
+                {
+                    b.Navigation("Services");
                 });
 #pragma warning restore 612, 618
         }

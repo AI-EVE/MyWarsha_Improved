@@ -1,5 +1,6 @@
-using LinqKit;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.ClientDTOs;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
@@ -20,43 +21,13 @@ namespace MyWarsha_API.Controllers
             _carRepository = carRepository;
         }
 
-        // [HttpGet]
-        // [ProducesResponseType(200)]
-        // public async Task<IActionResult> GetAll([FromQuery] PaginationPropreties paginationPropreties)
-        // {
-        //     var clients = await _clientRepository.GetAll(paginationPropreties);
-        //     return Ok(clients);
-        // }
-
-        // [HttpGet("filter")]
         [HttpGet]
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAll([FromQuery] ClientFilters filters, [FromQuery] PaginationPropreties paginationPropreties)
         {
-            var predicate = PredicateBuilder.New<Client>(true);
 
-            if (!string.IsNullOrEmpty(filters.Name))
-            {
-                predicate = predicate.And(c => c.Name.Contains(filters.Name));
-            }
 
-            if (!string.IsNullOrEmpty(filters.Email))
-            {
-                predicate = predicate.And(c => c.Email != null && c.Email.Contains(filters.Email));
-            }
-
-            if (!string.IsNullOrEmpty(filters.Phone))
-            {
-                predicate = predicate.And(c => c.Phones != null && c.Phones.Any(p => p.Number.Contains(filters.Phone)));
-            }
-
-            var clients = await _clientRepository.GetAll(predicate, paginationPropreties);
-            // get carcount for each client
-
-            foreach (var item in clients)
-            {
-                item.CarsCount = await _carRepository.CountWithClientId(item.Id);
-            }
+            var clients = await _clientRepository.GetAll(filters, paginationPropreties);
 
             return Ok(clients);
         }
@@ -88,7 +59,7 @@ namespace MyWarsha_API.Controllers
             await _clientRepository.Add(newClient);
             await _clientRepository.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = newClient.Id }, new {ClientId = newClient.Id });
+            return CreatedAtAction(nameof(GetById), new { id = newClient.Id }, new { ClientId = newClient.Id });
         }
 
         [HttpPut("{id}")]
@@ -99,15 +70,9 @@ namespace MyWarsha_API.Controllers
 
             if (clientToUpdate == null) return NotFound();
 
-            if (clientUpdateDto.Name != null)
-            {
-                clientToUpdate.Name = clientUpdateDto.Name;
-            }
+            clientToUpdate.Name = clientUpdateDto.Name ?? clientToUpdate.Name;
 
-            if (clientUpdateDto.Email != null)
-            {
-                clientToUpdate.Email = clientUpdateDto.Email;
-            }
+            clientToUpdate.Email = clientUpdateDto.Email ?? clientToUpdate.Email;
 
             _clientRepository.Update(clientToUpdate);
             await _clientRepository.SaveChanges();
@@ -118,6 +83,7 @@ namespace MyWarsha_API.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Delete(int id)
         {
             var clientToDelete = await _clientRepository.GetById(id);
@@ -125,32 +91,25 @@ namespace MyWarsha_API.Controllers
             if (clientToDelete == null) return NotFound();
 
             _clientRepository.Delete(clientToDelete);
-            await _clientRepository.SaveChanges();
 
-            return NoContent();
+            try
+            {
+                await _clientRepository.SaveChanges();
+
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && sqlException.Number == 547)
+            {
+                return Conflict(new { message = "This client is associated with a car or a service, please delete the proprety first." });
+            }
+
+
         }
 
         [HttpGet("count")]
         public async Task<IActionResult> Count([FromQuery] ClientFilters filters)
         {
-            var predicate = PredicateBuilder.New<Client>(true);
-
-            if (!string.IsNullOrEmpty(filters.Name))
-            {
-                predicate = predicate.And(c => c.Name.Contains(filters.Name));
-            }
-
-            if (!string.IsNullOrEmpty(filters.Email))
-            {
-                predicate = predicate.And(c => c.Email != null && c.Email.Contains(filters.Email));
-            }
-
-            if (!string.IsNullOrEmpty(filters.Phone))
-            {
-                predicate = predicate.And(c => c.Phones != null && c.Phones.Any(p => p.Number.Contains(filters.Phone)));
-            }
-
-            var count = await _clientRepository.FilterCount(predicate);
+            var count = await _clientRepository.FilterCount(filters);
             return Ok(count);
         }
 

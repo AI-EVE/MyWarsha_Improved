@@ -7,6 +7,6 @@ namespace Utils.FilteringUtils.CarFilters
         public string? ChassisNumber { get; set; }
         public string? MotorNumber { get; set; }
         public int? ClientId { get; set; }
-        public int? CarInfoId { get; set; }
+        public int? CarGenerationId { get; set; }
     }
 }

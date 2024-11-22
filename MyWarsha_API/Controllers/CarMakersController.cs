@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_DTOs.CarMakerDtos;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Interfaces.ServicesInterfaces.AzureServicesInterfaces;
@@ -14,7 +16,7 @@ namespace MyWarsha_API.Controllers
         private readonly ICarMakerRepository _carMakerRepository;
         private readonly IUploadImageService _uploadImageService;
         private readonly IDeleteImageService _deleteImageService;
-        
+
 
         public CarMakersController(ICarMakerRepository carMakerRepository, IUploadImageService uploadImageService, IDeleteImageService deleteImageService)
         {
@@ -44,12 +46,12 @@ namespace MyWarsha_API.Controllers
 
         [HttpPost]
         [ProducesResponseType(201)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Create([FromForm] CarMakerCreateDto carMakerCreateDto)
         {
 
-           string? logoUrl = await _uploadImageService.UploadImage(carMakerCreateDto.Logo);
-            
+            string? logoUrl = await _uploadImageService.UploadImage(carMakerCreateDto.Logo);
+
 
             CarMaker carMaker = new()
             {
@@ -58,65 +60,84 @@ namespace MyWarsha_API.Controllers
                 Logo = logoUrl
             };
 
-            await _carMakerRepository.Add(carMaker);
+            try
+            {
+                await _carMakerRepository.Add(carMaker);
 
-            await _carMakerRepository.SaveChanges();
+                await _carMakerRepository.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = carMaker.Id }, carMaker);
+                return CreatedAtAction(nameof(GetById), new { id = carMaker.Id }, carMaker);
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                if (logoUrl != null)
+                    await _deleteImageService.DeleteImage(logoUrl);
+
+                return Conflict(new { message = "CarMaker already exists" });
+            }
+
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Update(int id, [FromForm] CarMakerUpdateDto carMakerUpdateDto)
         {
             CarMaker? carMaker = await _carMakerRepository.GetById(id);
             if (carMaker == null) return NotFound();
 
-            if (carMakerUpdateDto.Name != null)
-            {
-                carMaker.Name = carMakerUpdateDto.Name;
-            }
+            carMaker.Name = carMakerUpdateDto.Name ?? carMaker.Name;
 
-            if (carMakerUpdateDto.Notes != null)
-            {
-                carMaker.Notes = carMakerUpdateDto.Notes;
-            }
+            carMaker.Notes = carMakerUpdateDto.Notes ?? carMaker.Notes;
 
             string? logoUrl = await _uploadImageService.UploadImage(carMakerUpdateDto.Logo);
-           
-            if (logoUrl != null)
-            {
-                if (carMaker.Logo != null)
-                {
-                    await _deleteImageService.DeleteImage(carMaker.Logo);
-                }
+            string? oldUrl = carMaker.Logo;
 
-                carMaker.Logo = logoUrl;
-            }
+            carMaker.Logo = logoUrl ?? carMaker.Logo;
             _carMakerRepository.Update(carMaker);
-            await _carMakerRepository.SaveChanges();
 
-            return NoContent();
+
+            try
+            {
+                await _carMakerRepository.SaveChanges();
+                if (oldUrl != null && logoUrl != null)
+                    await _deleteImageService.DeleteImage(oldUrl);
+
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                if (logoUrl != null)
+                    await _deleteImageService.DeleteImage(logoUrl);
+
+                return Conflict(new { message = "CarMaker already exists" });
+            }
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> Delete(int id)
         {
             CarMaker? carMaker = await _carMakerRepository.GetById(id);
             if (carMaker == null) return NotFound();
 
-            if (carMaker.Logo != null)
+            try
             {
-                await _deleteImageService.DeleteImage(carMaker.Logo);
+                _carMakerRepository.Delete(carMaker);
+                await _carMakerRepository.SaveChanges();
+
+                if (carMaker.Logo != null)
+                    await _deleteImageService.DeleteImage(carMaker.Logo);
+
+                return NoContent();
             }
-
-            _carMakerRepository.Delete(carMaker);
-            await _carMakerRepository.SaveChanges();
-
-            return NoContent();
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && sqlException.Number == 547)
+            {
+                return Conflict(new { message = "This car maker is being used in a car that has at least one car that has a service." });
+            }
         }
 
         [HttpGet("count")]

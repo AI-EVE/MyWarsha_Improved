@@ -13,23 +13,5 @@ namespace MyWarsha_DTOs.ProductToSellDTOs
         public bool IsReturned { get; set; }
         public string? Note { get; set; }
         public ProductDto Product { get; set; } = null!;
-        
-        public static ProductToSellDto FromProductToSell(ProductToSell productToSell)
-        {
-            
-            
-            return new ProductToSellDto
-            {
-                
-                Id = productToSell.Id,
-                PricePerUnit = productToSell.PricePerUnit,
-                Discount = productToSell.Discount,
-                Count = productToSell.Count,
-                IsReturned = productToSell.IsReturned,
-                Note = productToSell.Note,
-                Product = ProductDto.ToProductDto(productToSell.Product),
-                TotalPriceAfterDiscount = (productToSell.PricePerUnit * productToSell.Count) - productToSell.Discount
-            };
-        }        
     }
 }

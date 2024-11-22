@@ -5,7 +5,7 @@ namespace MyWarsha_DTOs.CarDTOs
     public class CarUpdateDto
     {
         public string? Color { get; set; }
-        public int? CarInfoId { get; set; }
+        public int? CarGenerationId { get; set; }
         public string? PlateNumber { get; set; } = null!;
         public string? ChassisNumber { get; set; }
         public string? MotorNumber { get; set; }

@@ -14,7 +14,8 @@ namespace MyWarsha_Models.Models
         public decimal TotalPaid { get; set; }
         [NotMapped]
         public decimal TotalUnpaid { get; set; }
-        public List<Car> Cars  { get; set; } = [];
+        public List<Car> Cars { get; set; } = [];
         public List<Phone> Phones { get; set; } = [];
+        public List<Service> Services { get; set; } = [];
     }
 }

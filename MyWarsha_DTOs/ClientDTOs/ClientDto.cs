@@ -10,18 +10,6 @@ namespace MyWarsha_DTOs.ClientDTOs
         public string Name { get; set; } = null!;
         public string? Email { get; set; }
         public List<PhoneDto> Phones { get; set; } = [];
-        public List<CarDto> Cars { get; set; }  = [];
-
-        public static ClientDto ToClientDto(Client client)
-        {
-            return new ClientDto
-            {
-                Id = client.Id,
-                Name = client.Name,
-                Email = client.Email,
-                Phones = client.Phones.Select(PhoneDto.ToPhoneDto).ToList(),
-                Cars = client.Cars.Select(CarDto.ToCarDto).ToList()
-            };
-        }
+        public List<CarDto> Cars { get; set; } = [];
     }
 }

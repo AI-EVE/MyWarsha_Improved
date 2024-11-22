@@ -14,6 +14,7 @@ using MyWarsha_Interfaces.ServicesInterfaces;
 using MyWarsha_Interfaces.ServicesInterfaces.AzureServicesInterfaces;
 using MyWarsha_Models.Models;
 using MyWarsha_Services.AzureServices;
+using MyWarsha_Services.PdfServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,6 +104,7 @@ builder.Services.AddRepositories();
 builder.Services.AddScoped<IBlobService, BlobService>();
 builder.Services.AddScoped<IUploadImageService, UploadImageService>();
 builder.Services.AddScoped<IDeleteImageService, DeleteImageService>();
+builder.Services.AddSingleton<InvoiceRenderingService>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

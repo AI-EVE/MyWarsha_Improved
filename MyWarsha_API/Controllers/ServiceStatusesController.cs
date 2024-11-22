@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using MyWarsha_Interfaces.RepositoriesInterfaces;
 using MyWarsha_Models.Models;
 
@@ -28,14 +30,23 @@ namespace MyWarsha_API.Controllers
         {
             serviceStatus.Id = 0;
             await _serviceStatusRepository.Add(serviceStatus);
-            await _serviceStatusRepository.SaveChanges();
 
-            return CreatedAtAction(nameof(GetServiceStatusById), new { id = serviceStatus.Id }, serviceStatus);
+            try
+            {
+                await _serviceStatusRepository.SaveChanges();
+
+                return CreatedAtAction(nameof(GetServiceStatusById), new { id = serviceStatus.Id }, serviceStatus);
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "Service status with the same name does already exists" });
+            }
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> DeleteServiceStatusById(int id)
         {
             var serviceStatus = await _serviceStatusRepository.GetServiceStatusById(id);
@@ -43,9 +54,17 @@ namespace MyWarsha_API.Controllers
             {
                 return NotFound();
             }
-            _serviceStatusRepository.Delete(serviceStatus);
-            await _serviceStatusRepository.SaveChanges();
-            return NoContent();
+
+            try
+            {
+                _serviceStatusRepository.Delete(serviceStatus);
+                await _serviceStatusRepository.SaveChanges();
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && sqlException.Number == 547)
+            {
+                return Conflict(new { message = "Service status is used in other by an already existing services, so it cant be deleted" });
+            }
         }
 
 
@@ -78,18 +97,47 @@ namespace MyWarsha_API.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
+        [ProducesResponseType(409)]
         // update description of service status
-        public async Task<IActionResult> UpdateServiceStatus(int id, [FromBody] string description)
+        public async Task<IActionResult> UpdateServiceStatus(int id, string description, string colorLight, string colorDark, string name)
         {
             var serviceStatus = await _serviceStatusRepository.GetServiceStatusById(id);
             if (serviceStatus == null)
             {
                 return NotFound();
             }
-            serviceStatus.Description = description;
-            _serviceStatusRepository.Update(serviceStatus);
-            await _serviceStatusRepository.SaveChanges();
-            return NoContent();
+
+
+            if (description != null)
+            {
+                serviceStatus.Description = description;
+            }
+
+            if (colorLight != null)
+            {
+                serviceStatus.ColorLight = colorLight;
+            }
+
+            if (colorDark != null)
+            {
+                serviceStatus.ColorDark = colorDark;
+            }
+
+            if (name != null)
+            {
+                serviceStatus.Name = name;
+            }
+
+            try
+            {
+                _serviceStatusRepository.Update(serviceStatus);
+                await _serviceStatusRepository.SaveChanges();
+                return NoContent();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "Service status with the same name does already exists" });
+            }
         }
     }
 }
