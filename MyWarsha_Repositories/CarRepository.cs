@@ -105,7 +105,7 @@ namespace MyWarsha_Repositories
 
             query = paginationPropreties.ApplyPagination(query);
 
-            return await _context.Car.Select(c => new CarDto
+            return await query.Select(c => new CarDto
             {
                 Id = c.Id,
                 Color = c.Color,

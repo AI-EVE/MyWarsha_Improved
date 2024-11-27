@@ -31,6 +31,16 @@ namespace MyWarsha_API.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("count")]
+        [ProducesResponseType(200)]
+        public IActionResult Count()
+        {
+            var count = _productBrandRepository.Count();
+
+            return Ok(count);
+        }
+
+        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
@@ -112,7 +122,7 @@ namespace MyWarsha_API.Controllers
                 _productBrandRepository.Update(productBrand);
                 await _productBrandRepository.SaveChanges();
 
-                return NoContent();
+                return Ok(productBrand);
             }
             catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && sqlEx.Number == 2627)
             {

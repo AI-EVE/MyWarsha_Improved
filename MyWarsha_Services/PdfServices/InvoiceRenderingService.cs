@@ -127,13 +127,15 @@ public class InvoiceRenderingService
                                     var backgroundColor = i % 2 == 0 ? Color.FromHex("#ffffff") : Color.FromHex("#f0f0f0");
 
                                     var invoiceItem = service.ProductsToSell[i];
+                                    var total = invoiceItem.TotalPriceAfterDiscount.ToString();
+                                    var lengthOfTotal = total.Length;
 
                                     table.Cell().Background(backgroundColor).PaddingTop(4).Text((i + 1).ToString());
                                     table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.Product.Name);
                                     table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.Count.ToString()).AlignRight();
                                     table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.PricePerUnit.ToString()).AlignRight();
                                     table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.Discount.ToString()).AlignRight();
-                                    table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.TotalPriceAfterDiscount.ToString()).AlignRight();
+                                    table.Cell().Background(backgroundColor).PaddingTop(4).Text(total.Substring(0, lengthOfTotal - 2)).AlignRight();
                                 }
 
                                 table.Cell()
@@ -141,9 +143,10 @@ public class InvoiceRenderingService
                                     .PaddingVertical(5)
                                     .BorderBottom(1)
                                     .BorderColor(Colors.Black);
-
+                                var totalOfAll = service.ProductsToSell.Sum(p => p.TotalPriceAfterDiscount).ToString();
+                                var lengthOfTotalOfAll = totalOfAll.Length;
                                 table.Cell().ColumnSpan(5).Text("Total").Bold().AlignRight();
-                                table.Cell().Text(service.ProductsToSell.Sum(p => p.TotalPriceAfterDiscount).ToString()).Bold().AlignRight();
+                                table.Cell().Text(totalOfAll.Substring(0, lengthOfTotalOfAll - 2)).Bold().AlignRight();
                             });
 
                             column.Item()

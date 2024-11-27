@@ -104,7 +104,7 @@ namespace MyWarsha_API.Controllers
                 if (oldUrl != null && logoUrl != null)
                     await _deleteImageService.DeleteImage(oldUrl);
 
-                return NoContent();
+                return Ok(carMaker);
             }
             catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
             {

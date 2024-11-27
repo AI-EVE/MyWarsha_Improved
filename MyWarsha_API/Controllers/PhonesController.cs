@@ -77,6 +77,37 @@ namespace MyWarsha_API.Controllers
             }
         }
 
+
+        [HttpPost("bulk")]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(409)]
+        public async Task<IActionResult> CreateBulk([FromBody] List<PhoneCreateDto> phoneCreateDto)
+        {
+            var phones = phoneCreateDto.Select(phone => new Phone
+            {
+                Number = phone.Number,
+                ClientId = phone.ClientId
+            }).ToList();
+
+            try
+            {
+                await _phoneRepository.AddRange(phones);
+                await _phoneRepository.SaveChanges();
+
+                return CreatedAtAction(nameof(GetById), new { id = phones.Select(phone => phone.Id) }, phones.Select(phone => new PhoneDto
+                {
+                    Id = phone.Id,
+                    Number = phone.Number,
+                    ClientId = phone.ClientId
+                }));
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+            {
+                return Conflict(new { message = "Repetetive phone number" });
+            }
+        }
+
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]

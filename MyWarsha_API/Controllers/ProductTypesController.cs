@@ -30,6 +30,15 @@ namespace MyWarsha_API.Controllers
 
             return Ok(productTypes);
         }
+        [AllowAnonymous]
+        [HttpGet("count")]
+        [ProducesResponseType(200)]
+        public IActionResult Count()
+        {
+            var productTypes = _productTypeRepository.Count();
+
+            return Ok(productTypes);
+        }
 
         [AllowAnonymous]
         [HttpGet("{id}")]

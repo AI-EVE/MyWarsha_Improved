@@ -21,28 +21,28 @@ namespace MyWarsha_Services.IdentityServices
             _userManager = UserManager;
         }
         public async Task<string> GenerateJwtTokenAsync(AppUser user)
-            {
-                var userRoles = await  _userManager.GetRolesAsync(user);
+        {
+            var userRoles = await _userManager.GetRolesAsync(user);
 
-                var claims = new List<Claim>
+            var claims = new List<Claim>
                 {
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
 
-                claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+            claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["Jwt:Issuer"],
-                    audience: _configuration["Jwt:Audience"],
-                    claims: claims,
-                    expires: DateTime.Now.AddMinutes(30),
-                    signingCredentials: creds);
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(24),
+                signingCredentials: creds);
 
-                return new JwtSecurityTokenHandler().WriteToken(token);
-            }
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
     }
 }
