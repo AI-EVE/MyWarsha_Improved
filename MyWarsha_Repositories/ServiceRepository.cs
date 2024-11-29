@@ -65,12 +65,12 @@ namespace MyWarsha_Repositories
 
             if (minPrice != null)
             {
-                query = query.Where(x => x.ServiceFees.Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Sum(ps => (ps.PricePerUnit - ps.Discount) * ps.Count) >= minPrice);
+                query = query.Where(x => x.ServiceFees.Where(sf => sf.IsReturned == false).Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Where(ps => ps.IsReturned == false).Sum(ps => (ps.PricePerUnit - ps.Discount) * ps.Count) >= minPrice);
             }
 
             if (maxPrice != null)
             {
-                query = query.Where(x => x.ServiceFees.Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Sum(ps => (ps.PricePerUnit - ps.Discount) * ps.Count) <= maxPrice);
+                query = query.Where(x => x.ServiceFees.Where(sf => sf.IsReturned == false).Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Where(ps => ps.IsReturned == false).Sum(ps => (ps.PricePerUnit - ps.Discount) * ps.Count) <= maxPrice);
             }
 
 
@@ -79,7 +79,9 @@ namespace MyWarsha_Repositories
             {
                 Id = x.Id,
                 Date = x.Date.ToString("yyyy-MM-dd"),
-                TotalPriceAfterDiscount = x.ServiceFees.Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Sum(ps => (ps.PricePerUnit - ps.Discount) * ps.Count),
+                TotalPriceAfterDiscount = x.ServiceFees
+                .Where(sf => sf.IsReturned == false)
+                .Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Where(ps => ps.IsReturned == false).Sum(ps => (ps.PricePerUnit - ps.Discount) * ps.Count),
                 Client = new ClientDtoForService
                 {
                     Id = x.Client.Id,
@@ -192,8 +194,9 @@ namespace MyWarsha_Repositories
             {
                 Id = x.Id,
                 Date = x.Date.ToString("yyyy-MM-dd"),
-                TotalPriceAfterDiscount = x.ServiceFees.Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Sum(ps => (ps.PricePerUnit * ps.Count) - ps.Discount),
-
+                TotalPriceAfterDiscount = x.ServiceFees
+                .Where(sf => sf.IsReturned == false)
+                .Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Where(ps => ps.IsReturned == false).Sum(ps => (ps.PricePerUnit - ps.Discount) * ps.Count),
                 Client = new ClientDtoForService
                 {
                     Id = x.Client.Id,
@@ -250,7 +253,7 @@ namespace MyWarsha_Repositories
                     Count = pts.Count,
                     IsReturned = pts.IsReturned,
                     Note = pts.Note,
-                    TotalPriceAfterDiscount = (pts.PricePerUnit * pts.Count) - pts.Discount,
+                    TotalPriceAfterDiscount = (pts.PricePerUnit - pts.Discount) * pts.Count,
                     Product = new ProductDto
                     {
                         Id = pts.Product.Id,
@@ -339,12 +342,12 @@ namespace MyWarsha_Repositories
 
             if (minPrice != null)
             {
-                query = query.Where(x => x.ServiceFees.Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Sum(ps => (ps.PricePerUnit * ps.Count) - ps.Discount) >= minPrice);
+                query = query.Where(x => x.ServiceFees.Where(sf => sf.IsReturned == false).Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Where(ps => ps.IsReturned == false).Sum(ps => (ps.PricePerUnit - ps.Discount) * ps.Count) >= minPrice);
             }
 
             if (maxPrice != null)
             {
-                query = query.Where(x => x.ServiceFees.Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Sum(ps => (ps.PricePerUnit * ps.Count) - ps.Discount) <= maxPrice);
+                query = query.Where(x => x.ServiceFees.Where(sf => sf.IsReturned == false).Sum(sf => sf.Price - sf.Discount) + x.ProductsToSell.Where(ps => ps.IsReturned == false).Sum(ps => (ps.PricePerUnit - ps.Discount) * ps.Count) <= maxPrice);
             }
 
             return await query.CountAsync();

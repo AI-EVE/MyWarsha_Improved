@@ -124,6 +124,10 @@ public class InvoiceRenderingService
                                     .BorderColor(Colors.Black);
                                 for (int i = 0; i < service.ProductsToSell.Count; i++)
                                 {
+                                    if (service.ProductsToSell[i].IsReturned)
+                                    {
+                                        continue;
+                                    }
                                     var backgroundColor = i % 2 == 0 ? Color.FromHex("#ffffff") : Color.FromHex("#f0f0f0");
 
                                     var invoiceItem = service.ProductsToSell[i];
@@ -271,8 +275,14 @@ public class InvoiceRenderingService
                                     .PaddingVertical(5)
                                     .BorderBottom(1)
                                     .BorderColor(Colors.Black);
-                                for (int i = 0; i < service.ProductsToSell.Count; i++)
+                                for (int i = 0; i < service.ServiceFees.Count; i++)
                                 {
+
+                                    if (service.ServiceFees[i].IsReturned)
+                                    {
+                                        continue;
+                                    }
+
                                     var backgroundColor = i % 2 == 0 ? Color.FromHex("#ffffff") : Color.FromHex("#f0f0f0");
 
                                     var invoiceItem = service.ServiceFees[i];

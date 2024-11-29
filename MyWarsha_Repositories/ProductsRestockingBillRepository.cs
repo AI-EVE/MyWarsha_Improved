@@ -67,12 +67,12 @@ namespace MyWarsha_Repositories
 
             if (filters.MinTotalPrice != null)
             {
-                query = query.Where(x => x.ProductsBought.Select(x => (x.PricePerUnit * x.Count) - x.Discount).Sum() >= filters.MinTotalPrice);
+                query = query.Where(x => x.ProductsBought.Where(x => x.IsReturned == false).Select(x => (x.PricePerUnit - x.Discount) * x.Count).Sum() >= filters.MinTotalPrice);
             }
 
             if (filters.MaxTotalPrice != null)
             {
-                query = query.Where(x => x.ProductsBought.Select(x => (x.PricePerUnit * x.Count) - x.Discount).Sum() <= filters.MaxTotalPrice);
+                query = query.Where(x => x.ProductsBought.Where(x => x.IsReturned == false).Select(x => (x.PricePerUnit - x.Discount) * x.Count).Sum() <= filters.MaxTotalPrice);
             }
 
             query = paginationPropreties.ApplyPagination(query);
@@ -125,12 +125,12 @@ namespace MyWarsha_Repositories
 
             if (filters.MinTotalPrice != null)
             {
-                query = query.Where(x => x.ProductsBought.Select(x => (x.PricePerUnit * x.Count) - x.Discount).Sum() >= filters.MinTotalPrice);
+                query = query.Where(x => x.ProductsBought.Where(x => x.IsReturned == false).Select(x => (x.PricePerUnit - x.Discount) * x.Count).Sum() >= filters.MinTotalPrice);
             }
 
             if (filters.MaxTotalPrice != null)
             {
-                query = query.Where(x => x.ProductsBought.Select(x => (x.PricePerUnit * x.Count) - x.Discount).Sum() <= filters.MaxTotalPrice);
+                query = query.Where(x => x.ProductsBought.Where(x => x.IsReturned == false).Select(x => (x.PricePerUnit - x.Discount) * x.Count).Sum() <= filters.MaxTotalPrice);
             }
 
             return await query.CountAsync();
