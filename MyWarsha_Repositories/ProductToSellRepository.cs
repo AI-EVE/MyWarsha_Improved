@@ -58,7 +58,7 @@ namespace MyWarsha_Repositories
                 Count = x.Count,
                 IsReturned = x.IsReturned,
                 Note = x.Note,
-                TotalPriceAfterDiscount = (x.PricePerUnit * x.Count) - x.Discount,
+                TotalPriceAfterDiscount = (x.PricePerUnit - x.Discount) * x.Count,
                 Product = new ProductDto
                 {
                     Id = x.Product.Id,
@@ -107,7 +107,7 @@ namespace MyWarsha_Repositories
                     Count = x.Count,
                     IsReturned = x.IsReturned,
                     Note = x.Note,
-                    TotalPriceAfterDiscount = (x.PricePerUnit * x.Count) - x.Discount,
+                    TotalPriceAfterDiscount = (x.PricePerUnit - x.Discount) * x.Count,
                     Product = new ProductDto
                     {
                         Id = x.Product.Id,

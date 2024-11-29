@@ -103,6 +103,16 @@ namespace MyWarsha_Repositories
                 query = query.Where(x => x.CarGenerationId == filters.CarGenerationId);
             }
 
+            if (filters.CarModelId != null)
+            {
+                query = query.Where(x => x.CarGeneration.CarModelId == filters.CarModelId);
+            }
+
+            if (filters.CarMakerId != null)
+            {
+                query = query.Where(x => x.CarGeneration.CarModel.CarMakerId == filters.CarMakerId);
+            }
+
             query = paginationPropreties.ApplyPagination(query);
 
             return await query.Select(c => new CarDto
@@ -199,6 +209,16 @@ namespace MyWarsha_Repositories
             if (filters.CarGenerationId != null)
             {
                 query = query.Where(x => x.CarGenerationId == filters.CarGenerationId);
+            }
+
+            if (filters.CarModelId != null)
+            {
+                query = query.Where(x => x.CarGeneration.CarModelId == filters.CarModelId);
+            }
+
+            if (filters.CarMakerId != null)
+            {
+                query = query.Where(x => x.CarGeneration.CarModel.CarMakerId == filters.CarMakerId);
             }
 
             return await query.CountAsync();

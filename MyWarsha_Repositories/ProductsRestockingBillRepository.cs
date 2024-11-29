@@ -36,7 +36,7 @@ namespace MyWarsha_Repositories
                         Count = pb.Count,
                         IsReturned = pb.IsReturned,
                         Note = pb.Note,
-                        TotalPriceAfterDiscount = (pb.PricePerUnit * pb.Count) - pb.Discount,
+                        TotalPriceAfterDiscount = (pb.PricePerUnit - pb.Discount) * pb.Count,
                         ProductId = pb.ProductId,
                         ProductsRestockingBillId = pb.ProductsRestockingBillId,
                         productName = pb.Product.Name
@@ -90,7 +90,7 @@ namespace MyWarsha_Repositories
                     Count = pb.Count,
                     IsReturned = pb.IsReturned,
                     Note = pb.Note,
-                    TotalPriceAfterDiscount = (pb.PricePerUnit * pb.Count) - pb.Discount,
+                    TotalPriceAfterDiscount = (pb.PricePerUnit - pb.Discount) * pb.Count,
                     ProductId = pb.ProductId,
                     ProductsRestockingBillId = pb.ProductsRestockingBillId,
                     productName = pb.Product.Name
