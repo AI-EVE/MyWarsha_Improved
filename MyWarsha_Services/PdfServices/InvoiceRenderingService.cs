@@ -72,7 +72,7 @@ public class InvoiceRenderingService
                                 .Column(column2 =>
                                 {
                                     column2.Item()
-                                        .Text("For: " + service.Client.Name)
+                                        .Text("Client name: " + service.Client.Name)
                                         .FontFamily("Arial")
                                         .FontSize(15)
                                         .Bold();
@@ -80,22 +80,20 @@ public class InvoiceRenderingService
                                     if (!string.IsNullOrEmpty(service.Car.PlateNumber))
                                     {
                                         column2.Item()
-                                            .Text("Plate: " + service.Car.PlateNumber)
-                                            .FontSize(15);
+                                            .PaddingTop(5)
+                                            .Text("Plate: " + service.Car.PlateNumber);
                                     }
 
                                     if (!string.IsNullOrEmpty(service.Car.ChassisNumber))
                                     {
                                         column2.Item()
-                                            .Text("Chassis: " + service.Car.ChassisNumber)
-                                            .FontSize(15);
+                                            .Text("Chassis: " + service.Car.ChassisNumber);
                                     }
 
                                     if (!string.IsNullOrEmpty(service.Car.MotorNumber))
                                     {
                                         column2.Item()
-                                            .Text("Model: " + service.Car.MotorNumber)
-                                            .FontSize(15);
+                                            .Text("Model: " + service.Car.MotorNumber);
                                     }
                                 });
 
