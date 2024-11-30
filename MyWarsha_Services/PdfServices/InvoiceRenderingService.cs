@@ -93,7 +93,7 @@ public class InvoiceRenderingService
                                     if (!string.IsNullOrEmpty(service.Car.MotorNumber))
                                     {
                                         column2.Item()
-                                            .Text("Model: " + service.Car.MotorNumber);
+                                            .Text("Motor number: " + service.Car.MotorNumber);
                                     }
                                 });
 
