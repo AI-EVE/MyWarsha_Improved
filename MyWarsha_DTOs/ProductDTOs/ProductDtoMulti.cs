@@ -8,6 +8,9 @@ namespace MyWarsha_DTOs.ProductDTOs
         public int Id { get; set; }
         public int CategoryId { get; set; }
         public string Name { get; set; } = null!;
+        public string Category { get; set; } = null!;
+        public string TypeName { get; set; } = null!;
+        public string BrandName { get; set; } = null!;
         public DateOnly DateAdded { get; set; }
         public string? Description { get; set; }
         public decimal ListPrice { get; set; }
