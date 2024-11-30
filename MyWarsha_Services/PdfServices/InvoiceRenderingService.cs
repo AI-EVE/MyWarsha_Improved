@@ -225,7 +225,7 @@ public class InvoiceRenderingService
 
                         row.RelativeItem()
                             .ShowOnce()
-                            .Text("Invoice")
+                            .Text("Quotation")
                             .AlignRight()
                             .FontFamily("Arial")
                             .ExtraBlack()
@@ -243,13 +243,29 @@ public class InvoiceRenderingService
                                 .Column(column2 =>
                                 {
                                     column2.Item()
-                                        .Text("For:")
-                                        .Bold();
-                                    column2.Item()
-                                        .Text(service.Client.Name)
-                                        .FontFamily("Arial")
-                                        .FontSize(15)
-                                        .Bold();
+                                         .Text("Client name: " + service.Client.Name)
+                                         .FontFamily("Arial")
+                                         .FontSize(15)
+                                         .Bold();
+
+                                    if (!string.IsNullOrEmpty(service.Car.PlateNumber))
+                                    {
+                                        column2.Item()
+                                            .PaddingTop(5)
+                                            .Text("Plate: " + service.Car.PlateNumber);
+                                    }
+
+                                    if (!string.IsNullOrEmpty(service.Car.ChassisNumber))
+                                    {
+                                        column2.Item()
+                                            .Text("Chassis: " + service.Car.ChassisNumber);
+                                    }
+
+                                    if (!string.IsNullOrEmpty(service.Car.MotorNumber))
+                                    {
+                                        column2.Item()
+                                            .Text("Motor number: " + service.Car.MotorNumber);
+                                    }
                                 });
 
                             row.RelativeItem().Column(column2 =>
