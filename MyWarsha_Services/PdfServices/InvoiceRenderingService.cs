@@ -147,7 +147,9 @@ public class InvoiceRenderingService
                                     .PaddingVertical(5)
                                     .BorderBottom(1)
                                     .BorderColor(Colors.Black);
-                                var totalOfAll = service.ProductsToSell.Sum(p => p.TotalPriceAfterDiscount).ToString();
+                                var totalOfAll = service.ProductsToSell
+                                .Where(p => !p.IsReturned)
+                                .Sum(p => p.TotalPriceAfterDiscount).ToString();
                                 var lengthOfTotalOfAll = totalOfAll.Length;
                                 table.Cell().ColumnSpan(5).Text("Total").Bold().AlignRight();
                                 table.Cell().Text(totalOfAll.Substring(0, lengthOfTotalOfAll - 2)).Bold().AlignRight();
@@ -302,7 +304,9 @@ public class InvoiceRenderingService
                                     .BorderColor(Colors.Black);
 
                                 table.Cell().ColumnSpan(5).Text("Total").Bold().AlignRight();
-                                table.Cell().Text(service.ServiceFees.Sum(sf => sf.TotalPriceAfterDiscount).ToString()).Bold().AlignRight();
+                                table.Cell().Text(service.ServiceFees.
+                                Where(sf => !sf.IsReturned).
+                                Sum(sf => sf.TotalPriceAfterDiscount).ToString()).Bold().AlignRight();
                             });
 
 
