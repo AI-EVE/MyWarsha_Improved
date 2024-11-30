@@ -54,7 +54,7 @@ public class InvoiceRenderingService
 
                         row.RelativeItem()
                             .ShowOnce()
-                            .Text("Invoice")
+                            .Text("بيان السعر")
                             .AlignRight()
                             .FontFamily("Arial")
                             .ExtraBlack()
@@ -72,13 +72,34 @@ public class InvoiceRenderingService
                                 .Column(column2 =>
                                 {
                                     column2.Item()
-                                        .Text("For:")
-                                        .Bold();
-                                    column2.Item()
-                                        .Text(service.Client.Name)
+                                        .Text("For: " + service.Client.Name)
                                         .FontFamily("Arial")
                                         .FontSize(15)
                                         .Bold();
+
+                                    if (!string.IsNullOrEmpty(service.Car.PlateNumber))
+                                    {
+                                        column2.Item()
+                                            .Text("Plate: " + service.Car.PlateNumber)
+                                            .FontFamily("Arial")
+                                            .FontSize(15);
+                                    }
+
+                                    if (!string.IsNullOrEmpty(service.Car.ChassisNumber))
+                                    {
+                                        column2.Item()
+                                            .Text("Chassis: " + service.Car.ChassisNumber)
+                                            .FontFamily("Arial")
+                                            .FontSize(15);
+                                    }
+
+                                    if (!string.IsNullOrEmpty(service.Car.MotorNumber))
+                                    {
+                                        column2.Item()
+                                            .Text("Model: " + service.Car.MotorNumber)
+                                            .FontFamily("Arial")
+                                            .FontSize(15);
+                                    }
                                 });
 
                             row.RelativeItem().Column(column2 =>
