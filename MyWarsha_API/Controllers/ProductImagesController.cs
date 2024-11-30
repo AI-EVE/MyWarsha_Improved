@@ -7,7 +7,6 @@ using MyWarsha_Models.Models;
 
 namespace MyWarsha_API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class ProductImagesController : ControllerBase

@@ -21,7 +21,6 @@ namespace MyWarsha_API.Controllers
             _categoryRepository = categoryRepository;
         }
 
-        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAll()
@@ -31,7 +30,6 @@ namespace MyWarsha_API.Controllers
             return Ok(categories);
         }
 
-        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
@@ -47,7 +45,6 @@ namespace MyWarsha_API.Controllers
             return Ok(category);
         }
 
-        [AllowAnonymous]
         [HttpGet("filter")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]

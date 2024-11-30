@@ -21,7 +21,6 @@ namespace MyWarsha_API.Controllers
             _productTypeRepository = productTypeRepository;
         }
 
-        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAll()
@@ -30,7 +29,6 @@ namespace MyWarsha_API.Controllers
 
             return Ok(productTypes);
         }
-        [AllowAnonymous]
         [HttpGet("count")]
         [ProducesResponseType(200)]
         public IActionResult Count()
@@ -40,7 +38,6 @@ namespace MyWarsha_API.Controllers
             return Ok(productTypes);
         }
 
-        [AllowAnonymous]
         [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
@@ -56,7 +53,6 @@ namespace MyWarsha_API.Controllers
             return Ok(productType);
         }
 
-        [AllowAnonymous]
         [HttpGet("filter")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]

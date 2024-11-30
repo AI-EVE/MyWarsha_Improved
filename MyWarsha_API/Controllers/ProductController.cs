@@ -11,7 +11,6 @@ using Utils.PageUtils;
 
 namespace MyWarsha_API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class ProductController : ControllerBase
