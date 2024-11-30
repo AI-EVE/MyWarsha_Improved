@@ -54,7 +54,7 @@ public class InvoiceRenderingService
 
                         row.RelativeItem()
                             .ShowOnce()
-                            .Text("بيان السعر")
+                            .Text("Quotation")
                             .AlignRight()
                             .FontFamily("Arial")
                             .ExtraBlack()
@@ -81,7 +81,6 @@ public class InvoiceRenderingService
                                     {
                                         column2.Item()
                                             .Text("Plate: " + service.Car.PlateNumber)
-                                            .FontFamily("Arial")
                                             .FontSize(15);
                                     }
 
@@ -89,7 +88,6 @@ public class InvoiceRenderingService
                                     {
                                         column2.Item()
                                             .Text("Chassis: " + service.Car.ChassisNumber)
-                                            .FontFamily("Arial")
                                             .FontSize(15);
                                     }
 
@@ -97,7 +95,6 @@ public class InvoiceRenderingService
                                     {
                                         column2.Item()
                                             .Text("Model: " + service.Car.MotorNumber)
-                                            .FontFamily("Arial")
                                             .FontSize(15);
                                     }
                                 });
