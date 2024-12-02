@@ -14,6 +14,7 @@ namespace MyWarsha_DTOs.ServiceDTOs
         public ClientDtoForService Client { get; set; } = null!;
         public CarDto Car { get; set; } = null!;
         public ServiceStatus Status { get; set; } = null!;
+        public string? KmCount { get; set; }
         public string? Note { get; set; }
         public List<ProductToSellDto> ProductsToSell { get; set; } = [];
         public List<ServiceFeeDto> ServiceFees { get; set; } = [];

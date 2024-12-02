@@ -29,41 +29,41 @@ public class InvoiceRenderingService
                 page.Header()
                     .Row(row =>
                     {
-                        row.RelativeItem()
-                            .Column(column =>
-                            {
+                        //row.RelativeItem()
+                        //    .Column(column =>
+                        //    {
 
-                                // column.Item().Element(container =>
-                                // {
-                                //     container.Width(100)  // Set the desired width
-                                //             .Height(50)  // Set the desired height
-                                //             .Image("https://example.com/path/to/your/image.png");
-                                // });
-                                column.Item().Text("AutoZone")
-                                    .FontSize(20)
-                                    .FontFamily("Arial")
-                                    .ExtraBlack()
-                                    .Bold();
+                        //        // column.Item().Element(container =>
+                        //        // {
+                        //        //     container.Width(100)  // Set the desired width
+                        //        //             .Height(50)  // Set the desired height
+                        //        //             .Image("https://example.com/path/to/your/image.png");
+                        //        // });
+                        //        //column.Item().Text("AutoZone")
+                        //        //    .FontSize(20)
+                        //        //    .FontFamily("Arial")
+                        //        //    .ExtraBlack()
+                        //        //    .Bold();
 
-                                column.Item().Text("Address")
-                                    .FontSize(10)
-                                    .FontFamily("Arial")
-                                    .ExtraBlack()
-                                    .Bold();
-                            });
+                        //        //column.Item().Text("Address")
+                        //        //    .FontSize(10)
+                        //        //    .FontFamily("Arial")
+                        //        //    .ExtraBlack()
+                        //        //    .Bold();
+                        //    });
 
                         row.RelativeItem()
                             .ShowOnce()
                             .Text("Quotation")
-                            .AlignRight()
+                            .AlignCenter()
                             .FontFamily("Arial")
                             .ExtraBlack()
-                            .FontSize(30);
+                            .FontSize(35);
                     });
 
 
                 page.Content()
-                    .PaddingTop(50)
+                    .PaddingTop(30)
                     .Column(column =>
                     {
                         column.Item().Row(row =>
@@ -76,6 +76,13 @@ public class InvoiceRenderingService
                                         .FontFamily("Arial")
                                         .FontSize(15)
                                         .Bold();
+
+
+
+                                    column2.Item()
+                                        .PaddingTop(5)
+                                        .Text(service.Car.CarInfo.CarMaker.Name + " / " + service.Car.CarInfo.CarModel.Name + " / " + service.Car.CarInfo.CarGeneration.Name);
+
 
                                     if (!string.IsNullOrEmpty(service.Car.PlateNumber))
                                     {
@@ -100,7 +107,7 @@ public class InvoiceRenderingService
                             row.RelativeItem().Column(column2 =>
                             {
                                 column2.Item()
-                                    .Text($"Invoice Number: {service.Id}")
+                                    .Text($"Quotation Serial: {service.Id}")
                                     .AlignRight()
                                     .Bold();
                                 column2.Item()
@@ -151,7 +158,7 @@ public class InvoiceRenderingService
                                     var lengthOfTotal = total.Length;
 
                                     table.Cell().Background(backgroundColor).PaddingTop(4).Text((i + 1).ToString());
-                                    table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.Product.Name);
+                                    table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.Product.Name + "   " + $"({invoiceItem.Product.ProductBrand.Name} - {invoiceItem.Product.ProductType.Name} - {invoiceItem.Product.Category.Name})");
                                     table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.Count.ToString()).AlignRight();
                                     table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.PricePerUnit.ToString()).AlignRight();
                                     table.Cell().Background(backgroundColor).PaddingTop(4).Text(invoiceItem.Discount.ToString()).AlignRight();
@@ -207,34 +214,34 @@ public class InvoiceRenderingService
                 page.Header()
                     .Row(row =>
                     {
-                        row.RelativeItem()
-                            .Column(column =>
-                            {
-                                column.Item().Text("AutoZone")
-                                    .FontSize(20)
-                                    .FontFamily("Arial")
-                                    .ExtraBlack()
-                                    .Bold();
+                        //row.RelativeItem()
+                        //    .Column(column =>
+                        //    {
+                        //        //column.Item().Text("AutoZone")
+                        //        //    .FontSize(20)
+                        //        //    .FontFamily("Arial")
+                        //        //    .ExtraBlack()
+                        //        //    .Bold();
 
-                                column.Item().Text("Address")
-                                    .FontSize(10)
-                                    .FontFamily("Arial")
-                                    .ExtraBlack()
-                                    .Bold();
-                            });
+                        //        //column.Item().Text("Address")
+                        //        //    .FontSize(10)
+                        //        //    .FontFamily("Arial")
+                        //        //    .ExtraBlack()
+                        //        //    .Bold();
+                        //    });
 
                         row.RelativeItem()
                             .ShowOnce()
                             .Text("Quotation")
-                            .AlignRight()
+                            .AlignCenter()
                             .FontFamily("Arial")
                             .ExtraBlack()
-                            .FontSize(30);
+                            .FontSize(35);
                     });
 
 
                 page.Content()
-                    .PaddingTop(50)
+                    .PaddingTop(30)
                     .Column(column =>
                     {
                         column.Item().Row(row =>
@@ -247,6 +254,10 @@ public class InvoiceRenderingService
                                          .FontFamily("Arial")
                                          .FontSize(15)
                                          .Bold();
+
+                                    column2.Item()
+                                           .PaddingTop(5)
+                                           .Text(service.Car.CarInfo.CarMaker.Name + " / " + service.Car.CarInfo.CarModel.Name + " / " + service.Car.CarInfo.CarGeneration.Name);
 
                                     if (!string.IsNullOrEmpty(service.Car.PlateNumber))
                                     {
@@ -271,7 +282,7 @@ public class InvoiceRenderingService
                             row.RelativeItem().Column(column2 =>
                             {
                                 column2.Item()
-                                    .Text($"Invoice Number: {service.Id}")
+                                    .Text($"Quotation Serial: {service.Id}")
                                     .AlignRight()
                                     .Bold();
                                 column2.Item()

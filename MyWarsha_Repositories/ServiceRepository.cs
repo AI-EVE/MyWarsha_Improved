@@ -129,6 +129,7 @@ namespace MyWarsha_Repositories
                     }).ToList()
                 },
                 Status = x.Status,
+                KmCount = x.KmCount,
                 Note = x.Note,
                 ProductsToSell = x.ProductsToSell.Select(pts => new ProductToSellDto
                 {
@@ -244,6 +245,7 @@ namespace MyWarsha_Repositories
                     }).ToList()
                 },
                 Status = x.Status,
+                KmCount = x.KmCount,
                 Note = x.Note,
                 ProductsToSell = x.ProductsToSell.Select(pts => new ProductToSellDto
                 {

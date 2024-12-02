@@ -100,6 +100,8 @@ namespace MyWarsha_API.Controllers
 
             product.Name = productUpdateDto.Name ?? product.Name;
             product.CategoryId = productUpdateDto.CategoryId ?? product.CategoryId;
+            product.ProductTypeId = productUpdateDto.ProductTypeId ?? product.ProductTypeId;
+            product.ProductBrandId = productUpdateDto.ProductBrandId ?? product.ProductBrandId;
             product.Description = productUpdateDto.Description ?? product.Description;
             product.ListPrice = productUpdateDto.ListPrice ?? product.ListPrice;
             product.SalePrice = productUpdateDto.SalePrice ?? product.SalePrice;

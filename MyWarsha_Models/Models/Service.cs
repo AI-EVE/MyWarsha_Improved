@@ -19,6 +19,7 @@ namespace MyWarsha_Models.Models
         [ForeignKey("ServiceStatusId")]
         public ServiceStatus Status { get; set; } = null!;
         public int ServiceStatusId { get; set; } = 1;
+        public string? KmCount { get; set; }
 
         public string? Note { get; set; }
 

@@ -13,6 +13,7 @@ namespace MyWarsha_DTOs.ServiceDTOs
         public int CarId { get; set; }
         [Required]
         public int ServiceStatusId { get; set; } = 1;
+        public string? KmCount { get; set; }
         public string? Note { get; set; }
 
         [Required]

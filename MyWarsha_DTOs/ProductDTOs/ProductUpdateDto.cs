@@ -4,6 +4,8 @@ namespace MyWarsha_DTOs.ProductDTOs
     {
         public string? Name { get; set; }
         public int? CategoryId { get; set; }
+        public int? ProductTypeId { get; set; }
+        public int? ProductBrandId { get; set; }
         public string? Description { get; set; }
         public decimal? ListPrice { get; set; }
         public decimal? SalePrice { get; set; }

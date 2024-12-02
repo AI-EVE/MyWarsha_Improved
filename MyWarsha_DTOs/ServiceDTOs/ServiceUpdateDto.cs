@@ -6,6 +6,7 @@ namespace MyWarsha_DTOs.ServiceDTOs
         public int? ClientId { get; set; }
         public int? CarId { get; set; }
         public int? ServiceStatusId { get; set; }
+        public string? KmCount { get; set; }
         public string? Note { get; set; }
     }
 }

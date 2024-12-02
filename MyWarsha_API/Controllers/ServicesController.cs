@@ -62,7 +62,7 @@ namespace MyWarsha_API.Controllers
                 var categories = await categoryRepository.GetAll();
                 var document = invoiceRenderingService.GenerateInvoicePdf(service, categories.ToList());
 
-                return File(document, "application/pdf", "invoice.pdf");
+                return File(document, "application/pdf", $"{service.Car.PlateNumber} - {service.Id}");
             }
             catch (Exception e)
             {
@@ -162,6 +162,11 @@ namespace MyWarsha_API.Controllers
                     service.ClientId = serviceUpdateDto.ClientId ?? service.ClientId;
                     service.CarId = serviceUpdateDto.CarId ?? service.CarId;
                 }
+            }
+
+            if (serviceUpdateDto.KmCount != null)
+            {
+                service.KmCount = serviceUpdateDto.KmCount;
             }
 
             _serviceRepository.Update(service);
